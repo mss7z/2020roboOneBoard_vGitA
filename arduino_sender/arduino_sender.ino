@@ -1,6 +1,6 @@
 #define ARRAYSIZE(X) (sizeof(X)/sizeof(X[0]))
 
-#include "2020roboOneBoardLibSender/lib.h"
+#include "lib.h"
 
 #include <SoftwareSerial.h>
 //                    TX RX
