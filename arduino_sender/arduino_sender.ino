@@ -54,18 +54,21 @@ namespace com{
   rob::aXbeeCoreCallback<1> xbeeCore(&xbeeSerial,38400);
   rob::aXbeeCom xbee(xbeeCore,rob::xbee64bitAddress(0x35,0x35,0x35,0x35,0x35,0x35,0x35,0x35));
 
+  void loopCom();
+  void sendControll();
+
   void loopCom(){
     static regularC sendInterval(100);
     if(sendInterval){
-      
+      sendControll();
     }
   }
 
   void sendControll(){
     PSX.updateState(PS);
     byte sendArray[]={
+      ANALOG_LEFT_Y(PS),
       ANALOG_RIGHT_Y(PS),
-      ANALOG_LEFT_Y(PS)
     };
     xbee.send(sendArray,ARRAYLEN(sendArray));
   }
@@ -77,4 +80,5 @@ void setup() {
 }
 
 void loop() {
+  com::loopCom();
 }

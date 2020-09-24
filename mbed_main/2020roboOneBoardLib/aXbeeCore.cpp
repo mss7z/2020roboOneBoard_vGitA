@@ -111,36 +111,4 @@ void aXbeeCoreBase::ifReceive(){
 	}
 }
 
-/*
-void aXbeeCoreSingleCallback::callbackFrame(void (*fp)(uint8_t*,uint16_t)){
-	ifReceiveFrame=callback(fp);
-	return;
-}
-void aXbeeCoreSingleCallback::callbackFrame(Callback<void(uint8_t*,uint16_t)> cb){
-	ifReceiveFrame=cb;
-	return;
-}
-
-
-int aXbeeCoreMultiCallback::addCallbackFrame(Callback<void(uint8_t*,uint16_t)> cb){
-	ifReceiveCallbackAlways[ifReceiveCallbackAlwaysCont]=cb;
-	return ifReceiveCallbackAlwaysCont++;
-}
-
-
-void aXbeeCoreMultiCallback::callbackFrameRepresentative(uint8_t *buff,uint16_t frameSize){
-	for(int i=0;i<ifReceiveCallbackAlwaysCont;i++){
-		ifReceiveCallbackAlways[i].call(buff,frameSize);
-	}
-}
-	
-aXbeeCoreMultiCallback::aXbeeCoreMultiCallback(PinName tx,PinName rx,int baudrate):
-	aXbeeCoreBase(tx,rx,baudrate),ifReceiveCallbackAlwaysCont(0)
-{
-	ifReceiveFrame=callback(this,&rob::aXbeeCore_internal::aXbeeCoreMultiCallback::callbackFrameRepresentative);
-}
-*/
-
-
-
 }

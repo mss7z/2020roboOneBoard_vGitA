@@ -2,15 +2,6 @@
 
 namespace rob{
 
-/*
-bool xbee64bitAddress::operator==(const xbee64bitAddress &a){
-	for(int i=0;i<addressLength;i++){
-		if(address[i]!=a.address[i]){
-			return false;
-		}
-	}
-}*/
-
 void aXbeeCom::callback(uint8_t *data,uint16_t dataSize){
 	if(data[0]!=0x90){//Frame Type
 		return;

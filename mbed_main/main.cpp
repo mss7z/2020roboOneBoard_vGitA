@@ -12,30 +12,91 @@
 
 #include "2020roboOneBoardLib/lib.hpp"
 
-rob::aXbeeCom xbee(rob::xbeeCore,rob::xbee64bitAddress(0x36,0x36,0x36,0x36,0x36,0x36,0x36,0x36));
+
 
 Serial pc(USBTX,USBRX,115200);
 DigitalOut led(LED1);
 
-rob::aTB6643KQ &motor1=rob::tb6643kq_md3;
-rob::aTB6643KQ &motor2=rob::tb6643kq_md4;
+namespace run{
+	class motor{
+		private:
+		rob::aTB6643KQ &mtInst;
+		float baseOutput;
+		public:
+		motor(rob::aTB6643KQ &mt):mtInst(mt),baseOutput(0.0){}
+		void setBase(const float val){baseOutput=val;}
+		void output(const float val){mtInst=val+baseOutput;}
+	};
+	motor motorL(rob::tb6643kq_md3);
+	motor motorR(rob::tb6643kq_md4);
+	
+	//内部
+	void pidAndOutput();
+	
+	//外部
+	void setBase(const float valL,const float valR);
+	
+	void pidAndOutput(){
+		motorL.output(0.0);
+		motorR.output(0.0);
+	}
+	
+	void setBase(const float valL,const float valR){
+		motorL.setBase(valL);
+		motorR.setBase(valR);
+	}
+	void loopRun(){
+		rob::regularC outputTime(50);
+		if(outputTime){
+			pidAndOutput();
+		}
+	}
+}
 
 namespace com{
+	rob::aXbeeCom xbee(rob::xbeeCore,rob::xbee64bitAddress(0x36,0x36,0x36,0x36,0x36,0x36,0x36,0x36));
+	
 	uint8_t receiveArray[255]={0};
 	uint16_t receiveSize=0;
 	
-	void setupCom();
+	//内部
 	void ifReceiveFromController(uint8_t*,uint16_t);
+	float byte2floatMotorOutput(uint8_t);
 	
+	//外部
+	void setupCom();
 	
-	void setupCom(){
-		xbee.attach(callback(ifReceiveFromController));
-	}
 	void ifReceiveFromController(uint8_t *array,uint16_t size){
 		for(int i=0;i<size;i++){
 			receiveArray[i]=array[i];
 		}
 		receiveSize=size;
+		
+		//受信データの処理
+		if(size!=2){
+			return;
+		}
+		//0L 1R
+		run::setBase(byte2floatMotorOutput(array[0]),byte2floatMotorOutput(array[1]));
+		
+	}
+	float byte2floatMotorOutput(const uint8_t source){
+		using namespace rob::arduino;
+		const uint8_t ZERO_VAL=128;
+		const uint8_t ZERO_RANGE=50;//+-
+		
+		if(source<(ZERO_VAL-ZERO_RANGE)){
+			//ゼロでないマイナス範囲の値の時！
+			return map<float>(source,0,(ZERO_VAL-ZERO_RANGE),-1.0,0);
+		}else if((ZERO_VAL+ZERO_RANGE)<source){
+			//ゼロでないプラス範囲の値の時！	
+			return map<float>(source,(ZERO_VAL+ZERO_RANGE),255,0,1.0);
+		}else{
+			return 0;
+		}
+	}
+	void setupCom(){
+		xbee.attach(callback(ifReceiveFromController));
 	}
 	void printReceive(){
 		pc.printf("size:%3d",receiveSize);
@@ -47,17 +108,16 @@ namespace com{
 }
 
 int main(){
+	rob::regularC printInterval(100);
 	com::setupCom();
 	
 	
 	//This is a test code
 	while(true){
-		pc.printf("Hello, Mbed! led is %d\n",(int)led);
-		led=!led;
-		wait(0.1);
-		
-		com::printReceive();
-		
+		if(printInterval){
+			com::printReceive();
+		}
+		run::loopRun();
 	}
 	
     return 0;
