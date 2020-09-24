@@ -1,7 +1,11 @@
-#define ARRAYSIZE(X) (sizeof(X)/sizeof(X[0]))
+
+#define ARRAYLEN(X) (sizeof(X)/sizeof(X[0]))
 
 #include "lib.h"
 
+#include <GPSX.h>
+#include <GPSXClass.h>
+#define PS PSX_PAD1
 #include <SoftwareSerial.h>
 //                    TX RX
 SoftwareSerial dcom(A4,A5,false);
@@ -44,12 +48,30 @@ public:
 
 //rob::aXbeeCore<HardwareSerial> temp(&Serial);
 
-rob::aXbeeCoreMultiCallback<HardwareSerial> xbeeCore(&Serial);
-rob::aXbeeCom xbee(xbeeCore,rob::xbee64bitAddress(0x35,0x35,0x35,0x35,0x35,0x35,0x35,0x35));
+namespace com{
+  rob::aXbeeCoreMultiCallback<HardwareSerial> xbeeCore(&Serial);
+  rob::aXbeeCom xbee(xbeeCore,rob::xbee64bitAddress(0x35,0x35,0x35,0x35,0x35,0x35,0x35,0x35));
 
+  void loopCom(){
+    static regularC sendInterval(100);
+    if(sendInterval){
+      
+    }
+  }
+
+  void sendControll(){
+    PSX.updateState(PS);
+    byte sendArray[]={
+      ANALOG_RIGHT_Y(PS),
+      ANALOG_LEFT_Y(PS)
+    }
+    xbee.send(sendArray,ARRAYLEN(sendArray));
+  }
+}
 void setup() {
   //dcom
   dcom.begin(9600);
+  PSX.mode(PS,MODE_ANALOG,MODE_LOCK);
 }
 
 void loop() {

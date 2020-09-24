@@ -22,7 +22,8 @@
 
 #include <string.h>
 #include <stdint.h>
-#include <new>
+#include <new.h>
+#include <Arduino.h>
 //#include "platform/mbed_assert.h"
 //#include "platform/mbed_toolchain.h"
 
