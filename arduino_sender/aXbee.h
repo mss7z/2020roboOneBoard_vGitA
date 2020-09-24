@@ -14,17 +14,20 @@ struct xbee64bitAddress{
   //bool operator== const(const xbee64bitAddress &);
 };
 
-class aXbeeCom{
+class aXbeeCom:
+  public aXbeeCallbackInterface
+{
   private:
-  aXbeeCore &xbeeParent;
-  Callback<void(uint8_t*,uint16_t)> ifReceive;
+  aXbeeCoreInterface &xbeeParent;
+  void (*ifReceive)(uint8_t[],uint16_t);
   const xbee64bitAddress pairAddr;
   uint8_t pairAddr16[AXBEE_16BIT_ADDR_LENGTH];
-  void ifReceiveFrame(uint8_t*,uint16_t);
+  
   
   public:
-  aXbeeCom(aXbeeCore&,const xbee64bitAddress&);
-  void attach(Callback<void(uint8_t*,uint16_t)>);
+  void callback(uint8_t[],uint16_t);
+  aXbeeCom(aXbeeCoreInterface&,const xbee64bitAddress&);
+  void attach(void (*)(uint8_t[],uint16_t));
   void send(uint8_t*,uint16_t);
 };
 

@@ -4,11 +4,8 @@
 #include "mbed.h"
 namespace rob{
 
-#define AXBEE_RBUFF_SIZE 255
-#define AXBEE_IF_RECEIVE_CALLBACK_MAXSIZE 16
-
-#define AXBEE_16BIT_ADDR_LENGTH 2
-#define AXBEE_64BIT_ADDR_LENGTH 8
+const int AXBEE_16BIT_ADDR_LENGTH=2;
+const int AXBEE_64BIT_ADDR_LENGTH=8;
 
 struct xbeeArrayNode{
 	const uint8_t *p;
@@ -34,7 +31,7 @@ protected:
 	Serial srl;
 	void ifReceive();
 	int rcounter;
-//	static const int rbuffSize;
+	static const int AXBEE_RBUFF_SIZE=255;
 	uint8_t rbuff[AXBEE_RBUFF_SIZE];
 	unsigned int rbuffTotal;
 	

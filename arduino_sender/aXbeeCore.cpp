@@ -6,16 +6,14 @@
 
 namespace rob{
 
-template<class SRL>
-aXbeeCoreBase<SRL>::aXbeeCoreBase(SRL *srlArg,const unsigned long baud):
+aXbeeCoreBase::aXbeeCoreBase(aXbeeArduinoSerialInterface *srlArg,const unsigned long baud):
   rcounter(0)
 {
   srl=srlArg;
   srl->begin(baud);
 }
 
-template<class SRL>
-int aXbeeCoreBase<SRL>::getByte(){
+int aXbeeCoreBase::getByte(){
   const unsigned long timeOut=micros()+AXBEE_TIMEOUT;
   while(true){
     if(srl->available()){
@@ -29,8 +27,7 @@ int aXbeeCoreBase<SRL>::getByte(){
 //送信の本体(APIのフレームにして送信)
 //フレームデータ(Frame-Specific Data)の入った配列とその長さを受けっとって送信する
 //後でエスケープに対応させること(api=2)
-template<class SRL>
-void aXbeeCoreBase<SRL>::sendFrame(const byte frameData[],const byte frameDataSize){
+void aXbeeCoreBase::sendFrame(const uint8_t frameData[],const uint16_t frameDataSize){
   unsigned int frameDataTotal=0;
   
   //Start Delimiter
@@ -52,8 +49,7 @@ void aXbeeCoreBase<SRL>::sendFrame(const byte frameData[],const byte frameDataSi
   srl->write(0xFF - (frameDataTotal & 0xFF));
 }
 
-template<class SRL>
-void aXbeeCoreBase<SRL>::sendFrame(const xbeeArrayNode node[],const byte nodeSize){
+void aXbeeCoreBase::sendFrame(const xbeeArrayNode node[],const uint16_t nodeSize){
   unsigned int frameDataTotal=0;
 
   //Start Delimiter
@@ -83,8 +79,7 @@ void aXbeeCoreBase<SRL>::sendFrame(const xbeeArrayNode node[],const byte nodeSiz
   return;
 }
 
-template<class SRL>
-void aXbeeCoreBase<SRL>::check(){
+void aXbeeCoreBase::check(){
   const unsigned long timeOut=micros()+AXBEE_TIMEOUT;
   while(true){
     if(srl->available()){
@@ -95,8 +90,7 @@ void aXbeeCoreBase<SRL>::check(){
   }
 }
 
-template<class SRL>
-void aXbeeCoreBase<SRL>::ifReceive(){
+void aXbeeCoreBase::ifReceive(){
   const uint8_t data=(uint8_t)srl->read();
   switch(rcounter){
   case 0:
@@ -128,57 +122,12 @@ void aXbeeCoreBase<SRL>::ifReceive(){
     break;
   case 4:
     if((0xFF-(rbuffTotal&0xFF)) == data){
-      if((bool)ifReceiveFrame){
-        ifReceiveFrame(rbuff,rframeSize);
-      }
+      ifReceiveFrame(rbuff,rframeSize);
     }
     rcounter=0;
     break;
   }
 }
-
-template class aXbeeCoreBase<HardwareSerial>;
-
-
-template<class SRL>
-void aXbeeCoreSingleCallback<SRL>::callbackFrame(void (*fp)(uint8_t*,uint16_t)){
-  aXbeeCoreBase<SRL>::ifReceiveFrame=callback(fp);
-  return;
-}
-template<class SRL>
-void aXbeeCoreSingleCallback<SRL>::callbackFrame(Callback<void(uint8_t*,uint16_t)> cb){
-  aXbeeCoreBase<SRL>::ifReceiveFrame=cb;
-  return;
-}
-template class aXbeeCoreSingleCallback<HardwareSerial>;
-
-template<class SRL>
-int aXbeeCoreMultiCallback<SRL>::addCallbackFrame(Callback<void(uint8_t*,uint16_t)> cb){
-  ifReceiveCallbackAlways[ifReceiveCallbackAlwaysCont]=cb;
-  return ifReceiveCallbackAlwaysCont++;
-}
-template<class SRL>
-void aXbeeCoreMultiCallback<SRL>::callbackFrame(Callback<void(uint8_t*,uint16_t)> cb){
-  addCallbackFrame(cb);
-}
-  
-
-template<class SRL>
-void aXbeeCoreMultiCallback<SRL>::callbackFrameRepresentative(uint8_t *buff,uint16_t frameSize){
-  for(int i=0;i<ifReceiveCallbackAlwaysCont;i++){
-    ifReceiveCallbackAlways[i].call(buff,frameSize);
-  }
-}
-
-template<class SRL>
-aXbeeCoreMultiCallback<SRL>::aXbeeCoreMultiCallback(SRL *srl,const unsigned long baud):
-  aXbeeCoreBase<SRL>::aXbeeCoreBase(srl,baud),ifReceiveCallbackAlwaysCont(0)
-{
-  aXbeeCoreBase<SRL>::ifReceiveFrame=callback(this,&rob::aXbeeCoreMultiCallback<SRL>::callbackFrameRepresentative);
-}
-
-template class aXbeeCoreMultiCallback<HardwareSerial>;
-//template class aXbeeCoreMultiCallback<SoftwareSerial>;
 
 }//namespace rob
 

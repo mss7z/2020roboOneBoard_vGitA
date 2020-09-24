@@ -28,6 +28,7 @@ public:
       return false;
     }
   }
+  operator bool(){return ist();}
   void set(unsigned long val){interval=val;}
   unsigned long read(){return interval;}
 };
@@ -49,7 +50,8 @@ public:
 //rob::aXbeeCore<HardwareSerial> temp(&Serial);
 
 namespace com{
-  rob::aXbeeCoreMultiCallback<HardwareSerial> xbeeCore(&Serial);
+  rob::aXbeeArduinoHardwareSerial xbeeSerial(Serial);
+  rob::aXbeeCoreCallback<1> xbeeCore(&xbeeSerial,38400);
   rob::aXbeeCom xbee(xbeeCore,rob::xbee64bitAddress(0x35,0x35,0x35,0x35,0x35,0x35,0x35,0x35));
 
   void loopCom(){
@@ -64,7 +66,7 @@ namespace com{
     byte sendArray[]={
       ANALOG_RIGHT_Y(PS),
       ANALOG_LEFT_Y(PS)
-    }
+    };
     xbee.send(sendArray,ARRAYLEN(sendArray));
   }
 }

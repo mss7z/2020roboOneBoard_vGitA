@@ -11,7 +11,7 @@ bool xbee64bitAddress::operator==(const xbee64bitAddress &a){
   }
 }*/
 
-void aXbeeCom::ifReceiveFrame(uint8_t *data,uint16_t dataSize){
+void aXbeeCom::callback(uint8_t *data,uint16_t dataSize){
   if(data[0]!=0x90){//Frame Type
     return;
   }
@@ -23,14 +23,14 @@ void aXbeeCom::ifReceiveFrame(uint8_t *data,uint16_t dataSize){
   pairAddr16[0]=data[9];pairAddr16[1]=data[10];//16bit address
   ifReceive(data+12,dataSize-12);//Received Data
 }
-aXbeeCom::aXbeeCom(aXbeeCore &parent,const xbee64bitAddress &pair):
+aXbeeCom::aXbeeCom(aXbeeCoreInterface &parent,const xbee64bitAddress &pair):
   xbeeParent(parent),pairAddr(pair)
 {
-  xbeeParent.callbackFrame(callback(this,&aXbeeCom::ifReceiveFrame));
+  xbeeParent.setCallback(this);
   pairAddr16[0]=0xff;pairAddr16[1]=0xfe;
 }
-void aXbeeCom::attach(Callback<void(uint8_t*,uint16_t)> cb){
-  ifReceive=cb;
+void aXbeeCom::attach(void (*p)(uint8_t[],uint16_t)){
+  ifReceive=p;
   return;
 }
 void aXbeeCom::send(uint8_t *data,uint16_t dataSize){
