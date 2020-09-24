@@ -12,6 +12,8 @@
 
 #include "2020roboOneBoardLib/lib.hpp"
 
+rob::aXbeeCom adb(rob::xbeeCore,rob::xbee64bitAddress(0x36,0x36,0x36,0x36,0x36,0x36,0x36,0x36));
+
 Serial pc(USBTX,USBRX);
 DigitalOut led(LED1);
 
