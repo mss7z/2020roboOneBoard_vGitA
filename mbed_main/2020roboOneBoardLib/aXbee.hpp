@@ -15,16 +15,19 @@ struct xbee64bitAddress{
 	//bool operator== const(const xbee64bitAddress &);
 };
 
-class aXbeeCom{
+class aXbeeCom:
+	public aXbeeCallbackInterface
+{
 	private:
-	aXbeeCore &xbeeParent;
+	aXbeeCoreInterface &xbeeParent;
 	Callback<void(uint8_t*,uint16_t)> ifReceive;
 	const xbee64bitAddress pairAddr;
 	uint8_t pairAddr16[AXBEE_16BIT_ADDR_LENGTH];
-	void ifReceiveFrame(uint8_t*,uint16_t);
+	
 	
 	public:
-	aXbeeCom(aXbeeCore&,const xbee64bitAddress&);
+	void callback(uint8_t*,uint16_t);
+	aXbeeCom(aXbeeCoreInterface&,const xbee64bitAddress&);
 	void attach(Callback<void(uint8_t*,uint16_t)>);
 	void send(uint8_t*,uint16_t);
 };

@@ -15,62 +15,137 @@ struct xbeeArrayNode{
 	const uint16_t length;
 };
 
-namespace aXbeeCore_internal{
-	
-	
-	class aXbeeCore{
-	protected:
-		Serial srl;
-		void ifReceive();
-		int rcounter;
-	//	static const int rbuffSize;
-		uint8_t rbuff[AXBEE_RBUFF_SIZE];
-		unsigned int rbuffTotal;
-		
-		uint16_t rframeSize;
-		int rframeCounter;
-		//void (*ifReceiveFrame)(uint8_t*,uint16_t);
-		Callback<void(uint8_t*,uint16_t)> ifReceiveFrame;
+class aXbeeCallbackInterface{
 	public:
-		aXbeeCore(PinName tx,PinName rx,int baudrate=9600);
-		
-		void sendFrame(const uint8_t frameData[],const uint16_t frameDataSize);
-		void sendFrame(const xbeeArrayNode* frameData,const uint16_t nodeSize);
-		
-		virtual void callbackFrame(Callback<void(uint8_t*,uint16_t)>)=0;
-		
-		void baud(int baudrate){srl.baud(baudrate);}
-	};
-	
-	class aXbeeCoreSingleCallback:
-		public aXbeeCore
-	{
-		public:
-		aXbeeCoreSingleCallback(PinName tx,PinName rx,int baudrate=9600):
-			aXbeeCore(tx,rx,baudrate){}
-		void callbackFrame(void (*fp)(uint8_t*,uint16_t));
-		void callbackFrame(Callback<void(uint8_t*,uint16_t)>);
-	};
+	virtual void callback(uint8_t[],uint16_t)=0;
+};
 
-	class aXbeeCoreMultiCallback:
-		public aXbeeCore
-	{
-		private:
-		int ifReceiveCallbackAlwaysCont;
-		Callback<void(uint8_t*,uint16_t)> ifReceiveCallbackAlways[AXBEE_IF_RECEIVE_CALLBACK_MAXSIZE];
-		void callbackFrameRepresentative(uint8_t*,uint16_t);
-		
-		public:
-		aXbeeCoreMultiCallback(PinName tx,PinName rx,int baudrate=9600);
-		int addCallbackFrame(Callback<void(uint8_t*,uint16_t)>);
-		void callbackFrame(Callback<void(uint8_t*,uint16_t)> cb){addCallbackFrame(cb);}
-		
-		void delCallbackFrame(){ifReceiveCallbackAlwaysCont=0;}
-	};
+
+class aXbeeCoreInterface{
+	public:
+	virtual void sendFrame(const uint8_t frameData[],const uint16_t frameDataSize)=0;
+	virtual void sendFrame(const xbeeArrayNode* frameData,const uint16_t nodeSize)=0;
+	virtual void setCallback(aXbeeCallbackInterface*)=0;
+};
+class aXbeeCoreBase:
+	public aXbeeCoreInterface
+{
+protected:
+	Serial srl;
+	void ifReceive();
+	int rcounter;
+//	static const int rbuffSize;
+	uint8_t rbuff[AXBEE_RBUFF_SIZE];
+	unsigned int rbuffTotal;
+	
+	uint16_t rframeSize;
+	int rframeCounter;
+	//void (*ifReceiveFrame)(uint8_t*,uint16_t);
+	//Callback<void(uint8_t*,uint16_t)> ifReceiveFrame;
+	
+	virtual void ifReceiveFrame(uint8_t[],uint16_t)=0;
+public:
+	aXbeeCoreBase(PinName tx,PinName rx,int baud);
+	
+	void sendFrame(const uint8_t frameData[],const uint16_t frameDataSize);
+	void sendFrame(const xbeeArrayNode* frameData,const uint16_t nodeSize);
+};
+
+
+template<int N>
+class aXbeeCoreCallback:
+	public aXbeeCoreBase
+{
+	private:
+	int callbackArrayCont;
+	aXbeeCallbackInterface *callbackArray[N];
+	public:
+	aXbeeCoreCallback(PinName tx,PinName rx,int baud=9600);
+	int addCallback(aXbeeCallbackInterface*);
+	void setCallback(aXbeeCallbackInterface *p){addCallback(p);}
+	protected:
+	void ifReceiveFrame(uint8_t[],uint16_t);
+};
+
+
+template<int N>
+inline aXbeeCoreCallback<N>::aXbeeCoreCallback(PinName tx,PinName rx,int baud):
+	aXbeeCoreBase(tx,rx,baud),callbackArrayCont(0)
+{
+	for(int i=0;i<N;i++){
+		callbackArray[i]=NULL;
+	}
 }
-using aXbeeCore_internal::aXbeeCore;
-using aXbeeCore_internal::aXbeeCoreSingleCallback;
-using aXbeeCore_internal::aXbeeCoreMultiCallback;
+template<int N>
+inline int aXbeeCoreCallback<N>::addCallback(aXbeeCallbackInterface *p){
+	if(!(callbackArrayCont<N))return -1;
+	callbackArray[callbackArrayCont]=p;
+	return callbackArrayCont++;
+}
+template<int N>
+inline void aXbeeCoreCallback<N>::ifReceiveFrame(uint8_t array[],uint16_t arrayLen){
+	for(int i=0;i<callbackArrayCont;i++){
+		callbackArray[i]->callback(array,arrayLen);
+	}
+}
+
+
+template<>
+class aXbeeCoreCallback<1>:
+	public aXbeeCoreBase
+{
+	private:
+	aXbeeCallbackInterface *callbackClass;
+	public:
+	aXbeeCoreCallback(PinName tx,PinName rx,int baud=9600);
+	int addCallback(aXbeeCallbackInterface*);
+	void setCallback(aXbeeCallbackInterface *p){addCallback(p);}
+	protected:
+	void ifReceiveFrame(uint8_t[],uint16_t);
+};
+inline aXbeeCoreCallback<1>::aXbeeCoreCallback(PinName tx,PinName rx,int baud):
+	aXbeeCoreBase(tx,rx,baud)
+{}
+inline int aXbeeCoreCallback<1>::addCallback(aXbeeCallbackInterface *p){
+	if(callbackClass!=NULL)return -1;
+	callbackClass=p;
+	return 1;
+}
+inline void aXbeeCoreCallback<1>::ifReceiveFrame(uint8_t array[],uint16_t arrayLen){
+	if(callbackClass==NULL)return;
+	callbackClass->callback(array,arrayLen);
+}
+
+/*
+class aXbeeCoreSingleCallback:
+	public aXbeeCoreBase
+{
+	private:
+	Callback<void(uint8_t[],uint16_t)> callbackFrameFunc;
+	protected:
+	void ifReceiveFrame(uint8_t[],uint16_t)
+	public:
+	aXbeeCoreSingleCallback(PinName tx,PinName rx,int baudrate=9600):
+		aXbeeCore(tx,rx,baudrate){}
+	void callbackFrame(void (*fp)(uint8_t*,uint16_t));
+	void callbackFrame(Callback<void(uint8_t*,uint16_t)>);
+};
+
+class aXbeeCoreMultiCallback:
+	public aXbeeCore
+{
+	private:
+	int ifReceiveCallbackAlwaysCont;
+	Callback<void(uint8_t*,uint16_t)> ifReceiveCallbackAlways[AXBEE_IF_RECEIVE_CALLBACK_MAXSIZE];
+	void callbackFrameRepresentative(uint8_t*,uint16_t);
+	
+	public:
+	aXbeeCoreMultiCallback(PinName tx,PinName rx,int baudrate=9600);
+	int addCallbackFrame(Callback<void(uint8_t*,uint16_t)>);
+	void callbackFrame(Callback<void(uint8_t*,uint16_t)> cb){addCallbackFrame(cb);}
+	
+	void delCallbackFrame(){ifReceiveCallbackAlwaysCont=0;}
+};*/
 
 }
 
