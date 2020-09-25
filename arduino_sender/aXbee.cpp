@@ -49,6 +49,7 @@ void aXbeeCom::send(uint8_t *data,uint16_t dataSize){
     {constVal2,ARRAYLEN(constVal2)},
     {data,dataSize}
   };
+  Serial.print("hey");
   xbeeParent.sendFrame(frame,ARRAYLEN(frame));
 }
 

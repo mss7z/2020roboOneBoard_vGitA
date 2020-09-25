@@ -13,10 +13,6 @@
 #include "2020roboOneBoardLib/lib.hpp"
 
 
-
-Serial pc(USBTX,USBRX,115200);
-DigitalOut led(LED1);
-
 namespace run{
 	class motor{
 		private:
@@ -39,10 +35,13 @@ namespace run{
 	void pidAndOutput(){
 		static rob::regularC outputTime(50);
 		static rob::a_imu03a &gyro=rob::imu03a;
+	//const rob::pidGain gain={0.0,0.0,0.0};
+		//static rob::aPid<float> pid(gain,0.05);
 		if(!outputTime){
 			return;
 		}
 		
+		//const float controll=pid.f()
 		motorL.output(0.0);
 		motorR.output(0.0);
 	}
@@ -57,7 +56,7 @@ namespace run{
 }
 
 namespace com{
-	rob::aXbeeCom xbee(rob::xbeeCore,rob::xbee64bitAddress(0x36,0x36,0x36,0x36,0x36,0x36,0x36,0x36));
+	rob::aXbeeCom xbee(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9C,0xF1));
 	
 	uint8_t receiveArray[255]={0};
 	uint16_t receiveSize=0;

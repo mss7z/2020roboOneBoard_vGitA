@@ -2,6 +2,7 @@
 #define AXBEE_CORE_HPP_INCLUDE_GUARD
 
 #include "mbed.h"
+#include "useful.hpp"
 namespace rob{
 
 const int AXBEE_16BIT_ADDR_LENGTH=2;

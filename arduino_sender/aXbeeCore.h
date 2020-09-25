@@ -113,6 +113,7 @@ inline aXbeeCoreCallback<N>::aXbeeCoreCallback(aXbeeArduinoSerialInterface *srl,
   for(int i=0;i<N;i++){
     callbackArray[i]=NULL;
   }
+  
 }
 template<int N>
 inline int aXbeeCoreCallback<N>::addCallback(aXbeeCallbackInterface *p){

@@ -72,6 +72,7 @@ void aXbeeCoreBase::sendFrame(const xbeeArrayNode* node,const uint16_t nodeSize)
 
 void aXbeeCoreBase::ifReceive(){
 	const uint8_t data=(uint8_t)srl.getc();
+	led=!led;
 	switch(rcounter){
 	case 0:
 		if(data==0x7E){

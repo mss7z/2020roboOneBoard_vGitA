@@ -2,6 +2,10 @@
 
 namespace rob{
 
+
+Serial pc(USBTX,USBRX,115200);
+DigitalOut led(LED1);
+
 namespace __flt_internal__{
 	//myFlt ver.0.1 by mss7z 201908250133
 	const int bufMax=10;

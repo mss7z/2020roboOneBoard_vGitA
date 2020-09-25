@@ -52,13 +52,18 @@ public:
 namespace com{
   rob::aXbeeArduinoHardwareSerial xbeeSerial(Serial);
   rob::aXbeeCoreCallback<1> xbeeCore(&xbeeSerial,38400);
-  rob::aXbeeCom xbee(xbeeCore,rob::xbee64bitAddress(0x35,0x35,0x35,0x35,0x35,0x35,0x35,0x35));
+  rob::aXbeeCom xbee(xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xa2,0x00,0x40,0xCA,0x9D,0x3B));
 
+  void setupCom();
   void loopCom();
   void sendControll();
 
+  void setupCom(){
+    xbeeSerial.begin(38400);
+  }
   void loopCom(){
     static regularC sendInterval(100);
+    //Serial.print("hey");
     if(sendInterval){
       sendControll();
     }
@@ -77,6 +82,9 @@ void setup() {
   //dcom
   dcom.begin(9600);
   PSX.mode(PS,MODE_ANALOG,MODE_LOCK);
+  //Serial.begin(38400);
+  //Serial.print("hello");
+  com::setupCom();
 }
 
 void loop() {

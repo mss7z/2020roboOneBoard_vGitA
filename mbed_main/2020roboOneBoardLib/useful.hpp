@@ -4,6 +4,10 @@
 #include "mbed.h"
 
 namespace rob{
+	
+
+extern Serial pc;
+extern DigitalOut led;
 
 #define ARRAYLEN(X) (sizeof((X))/sizeof((X)[0]))
 
@@ -79,5 +83,7 @@ public:
 
 }
 
+using rob::led;
+using rob::pc;
 
 #endif

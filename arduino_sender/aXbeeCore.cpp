@@ -10,7 +10,8 @@ aXbeeCoreBase::aXbeeCoreBase(aXbeeArduinoSerialInterface *srlArg,const unsigned 
   rcounter(0)
 {
   srl=srlArg;
-  srl->begin(baud);
+  //srl->begin(baud);
+ // srl->write('h');
 }
 
 int aXbeeCoreBase::getByte(){
