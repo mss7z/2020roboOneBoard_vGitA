@@ -34,22 +34,25 @@ namespace run{
 	void pidAndOutput();
 	
 	//外部
-	void setBase(const float valL,const float valR);
+	void setMove(const float valL,const float valR);
 	
 	void pidAndOutput(){
+		static rob::regularC outputTime(50);
+		static rob::a_imu03a &gyro=rob::imu03a;
+		if(!outputTime){
+			return;
+		}
+		
 		motorL.output(0.0);
 		motorR.output(0.0);
 	}
 	
-	void setBase(const float valL,const float valR){
+	void setMove(const float valL,const float valR){
 		motorL.setBase(valL);
 		motorR.setBase(valR);
 	}
 	void loopRun(){
-		rob::regularC outputTime(50);
-		if(outputTime){
-			pidAndOutput();
-		}
+		pidAndOutput();
 	}
 }
 
@@ -77,7 +80,7 @@ namespace com{
 			return;
 		}
 		//0L 1R
-		run::setBase(byte2floatMotorOutput(array[0]),byte2floatMotorOutput(array[1]));
+		run::setMove(byte2floatMotorOutput(array[0]),byte2floatMotorOutput(array[1]));
 		
 	}
 	float byte2floatMotorOutput(const uint8_t source){
