@@ -95,6 +95,7 @@ namespace run{
 	
 	void setupRun(){
 		resetGyroAndPid();
+		/*35.7,28.3,34.9,35.7,34.5,30.7,31.2,29.5,33.2,33.6*/
 		//gyro.setDeg(-32.73);
 	}
 	void loopRun(){
