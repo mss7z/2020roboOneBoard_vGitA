@@ -45,7 +45,8 @@ namespace run{
 	const rob::pidGain gain={0.000102,0.000,0.000015};
 	rob::aPid<float> pid(gain,CONTROL_CYCLE_TIME/1000.0);
 	
-	rob::a_imu03a &gyro=rob::imu03a;
+	rob::a_imu03a &imu=rob::imu03a;
+	float deg=0.0;
 	
 	
 	//内部
@@ -68,7 +69,8 @@ namespace run{
 			return;
 		}
 		
-		const float controll=pid.calc(gyro.getDeg());
+		deg+=imu.gyroZ.getDDeg()*(CONTROL_CYCLE_TIME/1000.0);
+		const float controll=pid.calc(deg);
 		motorL.output(controll);
 		motorR.output(controll);
 	}
@@ -83,16 +85,17 @@ namespace run{
 	}
 	void resetGyroAndPid(){
 		pid.reset();
-		gyro.resetModule();
-		gyro.startDeg();
+		imu.resetModule();
+		deg=0.0;
+		//gyro.startDeg();
 	}
 	void printDeg(){
-		pc.printf("deg:%s tagDeg:%s\n",rob::flt(gyro.getDeg()),rob::flt(pid.read()));
+		pc.printf("deg:%s tagDeg:%s\n",rob::flt(deg),rob::flt(pid.read()));
 	}
 	
 	void setupRun(){
 		resetGyroAndPid();
-		gyro.setDeg(-32.73);
+		//gyro.setDeg(-32.73);
 	}
 	void loopRun(){
 		pidAndOutput();

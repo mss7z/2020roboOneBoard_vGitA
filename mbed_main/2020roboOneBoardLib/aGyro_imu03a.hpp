@@ -34,9 +34,9 @@ class imu03aSPI{
 		PinName mosi,
 		PinName miso,
 		PinName sclk,
-		PinName csPin,
+		PinName csPin
 	);
-	void start(){sp=0;}
+	void start(){cs=0;}
 	int write(const int val){return sp.write(val);}
 	void end(){cs=1;}
 };
@@ -65,8 +65,8 @@ class imu03aGyro:
 	private:
 	uint16_t offsetRawVal;
 	
-	int16_t getOffset();
-	int16_t getRawVal();
+	uint16_t getOffsetRaw();
+	uint16_t getRawVal();
 	float rawVal2DDeg(const int16_t);
 	
 	public:
@@ -83,7 +83,7 @@ class imu03aAccel:
 	float rawVal2G(const uint16_t);
 	
 	public:
-	imu03aGyro(imu03aSPI &c,const uint8_t l,const uint8_t h):
+	imu03aAccel(imu03aSPI &c,const uint8_t l,const uint8_t h):
 		imu03aGyroAccelBase(c,l,h){}
 	float getG();
 	float getMperS2();
@@ -102,14 +102,14 @@ class a_imu03a{
 	imu03aAccel accelY;
 	imu03aAccel accelZ;
 	
-	a_imu03aimu03aSPI(
+	a_imu03a(
 		PinName mosi,
 		PinName miso,
 		PinName sclk,
-		PinName csPin,
+		PinName csPin
 	);
 	void resetModule();
-	void isNormal(){return setting.isNormal();}
+	bool isNormal(){return setting.isNormal();}
 };
 
 namespace old{

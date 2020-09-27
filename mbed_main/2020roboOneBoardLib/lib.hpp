@@ -37,8 +37,8 @@ aRotaryEncoder rotaryEncoder2(PA_8,PA_9,PullDown);
 #endif
 
 #ifdef ENABLE_imu03a
-//mosi miso slck csPin isForward
-a_imu03a imu03a(PC_12,PC_11,PC_10,PB_1,false);
+//mosi miso slck csPin
+a_imu03a imu03a(PC_12,PC_11,PC_10,PB_1);
 #endif
 
 #ifdef ENABLE_xbeeCore

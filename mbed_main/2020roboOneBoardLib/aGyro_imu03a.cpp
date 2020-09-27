@@ -8,7 +8,7 @@ imu03aSPI::imu03aSPI(
 	PinName mosi,
 	PinName miso,
 	PinName sclk,
-	PinName csPin,
+	PinName csPin
 ):
 	sp(mosi,miso,sclk),
 	cs(csPin)
@@ -76,9 +76,9 @@ bool imu03aSetting::isNormal(){
 }
 
 imu03aGyroAccelBase::imu03aGyroAccelBase(imu03aSPI& c,const uint8_t l,const uint8_t h):
-	com(c),LbitReg(l),HbitReg(h)
+	LbitReg(l),HbitReg(h),com(c)
 {}
-int16_t imu03aGyroAccelBase::getRawVal(){
+uint16_t imu03aGyroAccelBase::getRawVal(){
 	int16_t rval;
 	
 	com.start();
@@ -94,11 +94,11 @@ int16_t imu03aGyroAccelBase::getRawVal(){
 	return rval;
 }
 
-int16_t imu03aGyro::getOffsetRaw(){
+uint16_t imu03aGyro::getOffsetRaw(){
 	const int N=50;//1000
 	long sum=0;
 	for(int i=0;i<N;i++){
-		sum+=getRawVal();
+		sum+=imu03aGyroAccelBase::getRawVal();
 		wait_us(625);
 	}
 	return sum/N;
@@ -109,7 +109,7 @@ float imu03aGyro::rawVal2DDeg(const int16_t val){
 	return (val*500.0)/(float)0x7fff;
 }
 float imu03aGyro::getDDeg(){
-	return rawVal2DDeg(getRawVal()-offsetRawVal);
+	return rawVal2DDeg(imu03aGyroAccelBase::getRawVal()-offsetRawVal);
 }
 void imu03aGyro::resetOffset(){
 	offsetRawVal=getOffsetRaw();
@@ -120,17 +120,11 @@ float imu03aAccel::rawVal2G(const uint16_t val){
 	return (val*2.0)/(float)0x7fff;
 }
 float imu03aAccel::getG(){
-	return rawVal2G(getRawVal());
+	return rawVal2G(imu03aGyroAccelBase::getRawVal());
 }
 float imu03aAccel::getMperS2(){
 	//1G=9.80665m/s^2
 	return 9.80665*getG();
-}
-
-
-void a_imu03a::resetDeg(){
-	deg=0.0;
-	tc.detach();
 }
 
 a_imu03a::a_imu03a(
@@ -160,7 +154,7 @@ void a_imu03a::resetModule(){
 }
 
 namespace old{
-/*
+
 a_imu03a::a_imu03a(
 	PinName mosi,
 	PinName miso,
