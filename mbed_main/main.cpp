@@ -46,7 +46,7 @@ namespace run{
 	rob::aPid<float> pid(gain,CONTROL_CYCLE_TIME/1000.0);
 	
 	rob::a_imu03a &imu=rob::imu03a;
-	float deg=0.0;
+	float accelDeg=0.0,gyroDeg=0.0,deg=0.0;
 	
 	
 	//内部
@@ -69,7 +69,13 @@ namespace run{
 			return;
 		}
 		
-		deg+=imu.gyroZ.getDDeg()*(CONTROL_CYCLE_TIME/1000.0);
+		/*現在角度算出*/
+		static const float degK=0.995;
+		accelDeg=(180.0/M_PI)*atanf(imu.accelY.getG()/(-imu.accelX.getG()));
+		gyroDeg+=imu.gyroZ.getDDeg()*(CONTROL_CYCLE_TIME/1000.0);
+		deg=gyroDeg*degK+accelDeg*(1.0-degK);
+		
+		
 		const float controll=pid.calc(deg);
 		motorL.output(controll);
 		motorR.output(controll);
@@ -90,7 +96,7 @@ namespace run{
 		//gyro.startDeg();
 	}
 	void printDeg(){
-		pc.printf("deg:%s tagDeg:%s\n",rob::flt(deg),rob::flt(pid.read()));
+		pc.printf("deg:%s gyroDeg:%s accelDeg:%s  tagDeg:%s\n",rob::flt(deg),rob::flt(gyroDeg),rob::flt(accelDeg),rob::flt(pid.read()));
 	}
 	
 	void setupRun(){
