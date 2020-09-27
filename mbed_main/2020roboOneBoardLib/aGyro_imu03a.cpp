@@ -1,8 +1,166 @@
 #include "aGyro_imu03a.hpp"
 
 namespace rob{
-//int moniva;
 
+namespace a_imu03a_internal{
+	
+imu03aSPI::imu03aSPI(
+	PinName mosi,
+	PinName miso,
+	PinName sclk,
+	PinName csPin,
+):
+	sp(mosi,miso,sclk),
+	cs(csPin)
+{
+	//通信速度1MHz
+	sp.frequency(1000000);
+	//ビット長8bit, mode 立下り先行シフト先行
+	sp.format(8,3);
+	//https://os.mbed.com/users/okini3939/notebook/SPI_jp/
+	
+	end();
+	//wait_ms(23);
+}
+
+imu03aSetting::imu03aSetting(imu03aSPI &c):
+	com(c)
+{}
+void imu03aSetting::resetModule(){
+	int val;
+	
+	com.start();
+	com.write(0x80|0x12);
+	val=com.write(0x00);
+	com.end();
+	//pc.printf("0x12 val is 0x%2X\n",val);
+	
+	//CTRL3_C に値を書き込んでModuleをリセットする
+	//set CTRL3_C register
+	com.start();
+	com.write(0x12);
+	com.write(val|0x1);
+	com.end();
+	
+	wait_ms(23);
+	
+	//CTRL1_XL に設定値を書きこんでacceleration sensorを起動
+	//設定値は1.66kHz +-2g
+	//Anti-aliasing filter bandwidth(これより高い周波数成分を消すlowpass filter) 400Hz
+	//(XL_BW_SCAL_ODR=0 のため 1.66kHzでは400Hz)
+	com.start();
+	com.write(0x10);
+	com.write(0b10000000);
+	com.end();
+	
+	//CTRL2_G に設定値を書きこんでgyroを起動
+	//設定値は1.66kHz 500dps
+	com.start();
+	com.write(0x11);
+	com.write(0b10000100);
+	com.end();
+	
+	//wait_ms(83);
+	
+}
+
+bool imu03aSetting::isNormal(){
+	//who am i レジスターが0x69を返すかどうか
+	int val;
+	com.start();
+	com.write(0x80|0x0f);
+	val=com.write(0x00);
+	//pc.printf("who am i return 0x%2X\n",val);
+	com.end();
+	return (val==0x69);
+}
+
+imu03aGyroAccelBase::imu03aGyroAccelBase(imu03aSPI& c,const uint8_t l,const uint8_t h):
+	com(c),LbitReg(l),HbitReg(h)
+{}
+int16_t imu03aGyroAccelBase::getRawVal(){
+	int16_t rval;
+	
+	com.start();
+	com.write(0x80|LbitReg);
+	rval=com.write(0x00);
+	com.end();
+	
+	com.start();
+	com.write(0x80|HbitReg);
+	rval|=com.write(0x00)<<8;
+	com.end();
+	
+	return rval;
+}
+
+int16_t imu03aGyro::getOffsetRaw(){
+	const int N=50;//1000
+	long sum=0;
+	for(int i=0;i<N;i++){
+		sum+=getRawVal();
+		wait_us(625);
+	}
+	return sum/N;
+}
+
+float imu03aGyro::rawVal2DDeg(const int16_t val){
+	//定数についてはimu03aSetting::resetModuleを参照のこと
+	return (val*500.0)/(float)0x7fff;
+}
+float imu03aGyro::getDDeg(){
+	return rawVal2DDeg(getRawVal()-offsetRawVal);
+}
+void imu03aGyro::resetOffset(){
+	offsetRawVal=getOffsetRaw();
+}
+
+float imu03aAccel::rawVal2G(const uint16_t val){
+	//定数についてはimu03aSetting::resetModuleを参照のこと
+	return (val*2.0)/(float)0x7fff;
+}
+float imu03aAccel::getG(){
+	return rawVal2G(getRawVal());
+}
+float imu03aAccel::getMperS2(){
+	//1G=9.80665m/s^2
+	return 9.80665*getG();
+}
+
+
+void a_imu03a::resetDeg(){
+	deg=0.0;
+	tc.detach();
+}
+
+a_imu03a::a_imu03a(
+	PinName mosi,
+	PinName miso,
+	PinName sclk,
+	PinName csPin
+):	
+	com(mosi,miso,sclk,csPin),
+	setting(com),
+	//レジスターの値はデータシートを参照のこと
+	gyroX(com,0x22,0x23),
+	gyroY(com,0x24,0x25),
+	gyroZ(com,0x26,0x27),
+	accelX(com,0x28,0x29),
+	accelY(com,0x2A,0x2B),
+	accelZ(com,0x2C,0x2D)
+{
+	resetModule();
+}
+void a_imu03a::resetModule(){
+	setting.resetModule();
+	
+	gyroX.resetOffset();
+	gyroY.resetOffset();
+	gyroZ.resetOffset();
+}
+
+namespace old{
+/*
 a_imu03a::a_imu03a(
 	PinName mosi,
 	PinName miso,
@@ -164,5 +322,7 @@ bool a_imu03a::isNormalChecker(){
 	comE();
 	return (val==0x69);
 }
+}//namespace old
 
-}
+}//namespace a_imu03a_internal
+}//namespace rob
