@@ -6,12 +6,12 @@
 
 namespace rob{
 
-aXbeeCoreBase::aXbeeCoreBase(aXbeeArduinoSerialInterface *srlArg,const unsigned long baud):
+//constructor 内部でbeginできない理由
+//https://forum.arduino.cc/index.php?topic=23708.0
+aXbeeCoreBase::aXbeeCoreBase(aXbeeArduinoSerialInterface *srlArg):
   rcounter(0)
 {
   srl=srlArg;
-  //srl->begin(baud);
- // srl->write('h');
 }
 
 int aXbeeCoreBase::getByte(){
