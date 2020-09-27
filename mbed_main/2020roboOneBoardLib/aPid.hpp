@@ -42,13 +42,13 @@ namespace __aPid_internal__{
 		delta<T> dd1,dd2;
 	public:
 		aPid(float kPArg,float kIArg,float kDArg,float dtArg);
-		aPid(pidGain gain,float dtArg);
+		aPid(const pidGain gain,float dtArg);
 		T calc(T val);
 		void set(T val){target=val;}
 		T read(){return target;}
 		void reset();
 		void setGain(float kPArg,float kIArg,float kDArg);
-		void setGain(pidGain arg);
+		void setGain(const pidGain arg);
 	};
 	
 	template<typename T>
@@ -59,7 +59,7 @@ namespace __aPid_internal__{
 	}
 	
 	template<typename T>
-	void aPid<T>::setGain(pidGain arg){
+	void aPid<T>::setGain(const pidGain arg){
 		setGain(arg.p, arg.i, arg.d);
 	}
 	
@@ -81,10 +81,10 @@ namespace __aPid_internal__{
 	}
 	
 	template<typename T>
-	aPid<T>::aPid(pidGain gain,float dtArg):
+	aPid<T>::aPid(const pidGain gain,float dtArg):
 	DT(dtArg),dp(DT),dd1(DT),dd2(DT)
 	{
-		setGain(gain,dtArg);
+		setGain(gain);
 		reset();
 	}
 

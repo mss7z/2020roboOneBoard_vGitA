@@ -83,7 +83,7 @@ protected:
   virtual void ifReceiveFrame(uint8_t[],uint16_t)=0;
   int getByte();
 public:
-  aXbeeCoreBase(aXbeeArduinoSerialInterface*,const unsigned long);
+  aXbeeCoreBase(aXbeeArduinoSerialInterface*);
   void check();
   void sendFrame(const uint8_t frameData[],const uint16_t frameDataSize);
   void sendFrame(const xbeeArrayNode node[],const uint16_t nodeSize);
@@ -98,7 +98,7 @@ class aXbeeCoreCallback:
   int callbackArrayCont;
   aXbeeCallbackInterface *callbackArray[N];
   public:
-  aXbeeCoreCallback(aXbeeArduinoSerialInterface*,const unsigned long baud=9600);
+  aXbeeCoreCallback(aXbeeArduinoSerialInterface*);
   int addCallback(aXbeeCallbackInterface*);
   void setCallback(aXbeeCallbackInterface *p){addCallback(p);}
   protected:
@@ -107,8 +107,8 @@ class aXbeeCoreCallback:
 
 
 template<int N>
-inline aXbeeCoreCallback<N>::aXbeeCoreCallback(aXbeeArduinoSerialInterface *srl,const unsigned long baud):
-  aXbeeCoreBase(srl,baud),callbackArrayCont(0)
+inline aXbeeCoreCallback<N>::aXbeeCoreCallback(aXbeeArduinoSerialInterface *srl):
+  aXbeeCoreBase(srl),callbackArrayCont(0)
 {
   for(int i=0;i<N;i++){
     callbackArray[i]=NULL;
@@ -136,14 +136,14 @@ class aXbeeCoreCallback<1>:
   private:
   aXbeeCallbackInterface *callbackClass;
   public:
-  aXbeeCoreCallback(aXbeeArduinoSerialInterface*,const unsigned long baud=9600);
+  aXbeeCoreCallback(aXbeeArduinoSerialInterface*);
   int addCallback(aXbeeCallbackInterface*);
   void setCallback(aXbeeCallbackInterface *p){addCallback(p);}
   protected:
   void ifReceiveFrame(uint8_t[],uint16_t);
 };
-inline aXbeeCoreCallback<1>::aXbeeCoreCallback(aXbeeArduinoSerialInterface *srl,const unsigned long baud):
-  aXbeeCoreBase(srl,baud)
+inline aXbeeCoreCallback<1>::aXbeeCoreCallback(aXbeeArduinoSerialInterface *srl):
+  aXbeeCoreBase(srl)
 {}
 inline int aXbeeCoreCallback<1>::addCallback(aXbeeCallbackInterface *p){
   if(callbackClass!=NULL)return -1;

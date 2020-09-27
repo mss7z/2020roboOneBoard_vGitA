@@ -12,46 +12,94 @@
 
 #include "2020roboOneBoardLib/lib.hpp"
 
+namespace base{
+	bool isEmergVal=false;
+	bool setEmerg(const bool val){
+		return isEmergVal=val;
+	}
+	bool isEmerg(){
+		return isEmergVal;
+	}
+	bool turnEmerg(){
+		return isEmergVal=!isEmergVal;
+	}
+}
 
 namespace run{
 	class motor{
 		private:
 		rob::aTB6643KQ &mtInst;
 		float baseOutput;
+		const float constMult;
 		public:
-		motor(rob::aTB6643KQ &mt):mtInst(mt),baseOutput(0.0){}
+		motor(rob::aTB6643KQ &mt,const float cm):mtInst(mt),baseOutput(0.0),constMult(cm){}
 		void setBase(const float val){baseOutput=val;}
-		void output(const float val){mtInst=val+baseOutput;}
+		void output(const float val){mtInst=constMult*(val+baseOutput);}
+		void stop(){mtInst=0.0;}
 	};
-	motor motorL(rob::tb6643kq_md3);
-	motor motorR(rob::tb6643kq_md4);
+	motor motorL(rob::tb6643kq_md3,1.0);
+	motor motorR(rob::tb6643kq_md4,-1.0);
+	
+	const int CONTROL_CYCLE_TIME=1;//ms
+	
+	const rob::pidGain gain={0.000102,0.000,0.000015};
+	rob::aPid<float> pid(gain,CONTROL_CYCLE_TIME/1000.0);
+	
+	rob::a_imu03a &gyro=rob::imu03a;
+	
 	
 	//内部
 	void pidAndOutput();
 	
 	//外部
 	void setMove(const float valL,const float valR);
+	void setTargetDeg(const float deg);
+	void resetGyroAndPid();
+	void printDeg();
+	void isEmergency(bool);
 	
 	void pidAndOutput(){
-		static rob::regularC outputTime(50);
-		static rob::a_imu03a &gyro=rob::imu03a;
-	//const rob::pidGain gain={0.0,0.0,0.0};
-		//static rob::aPid<float> pid(gain,0.05);
+		static rob::regularC outputTime(CONTROL_CYCLE_TIME);
+		
 		if(!outputTime){
 			return;
 		}
+		if(base::isEmerg()){
+			return;
+		}
 		
-		//const float controll=pid.f()
-		motorL.output(0.0);
-		motorR.output(0.0);
+		const float controll=pid.calc(gyro.getDeg());
+		motorL.output(controll);
+		motorR.output(controll);
 	}
+	
 	
 	void setMove(const float valL,const float valR){
 		motorL.setBase(valL);
 		motorR.setBase(valR);
 	}
+	void setTargetDeg(const float deg){
+		pid.set(deg);
+	}
+	void resetGyroAndPid(){
+		pid.reset();
+		gyro.resetModule();
+		gyro.startDeg();
+	}
+	void printDeg(){
+		pc.printf("deg:%s tagDeg:%s\n",rob::flt(gyro.getDeg()),rob::flt(pid.read()));
+	}
+	
+	void setupRun(){
+		resetGyroAndPid();
+		gyro.setDeg(-32.73);
+	}
 	void loopRun(){
 		pidAndOutput();
+		if(base::isEmerg()){
+			motorL.stop();
+			motorR.stop();
+		}
 	}
 }
 
@@ -61,9 +109,12 @@ namespace com{
 	uint8_t receiveArray[255]={0};
 	uint16_t receiveSize=0;
 	
+	float targetDeg=0;
+	
 	//内部
 	void ifReceiveFromController(uint8_t*,uint16_t);
 	float byte2floatMotorOutput(uint8_t);
+	bool genBoolFromButtonBit(uint8_t,uint8_t);
 	
 	//外部
 	void setupCom();
@@ -75,11 +126,50 @@ namespace com{
 		receiveSize=size;
 		
 		//受信データの処理
-		if(size!=2){
+		if(size!=3){
 			return;
 		}
+		
+		enum{
+			FORWARD_BTN,
+			REVERSE_BTN,
+			DEG_UP_BTN,
+			DEG_DOWN_BTN,
+			DEG_ZERO_BTN,
+			KILL_BTN,
+		};
+		
+		if(genBoolFromButtonBit(array[2],KILL_BTN)){
+			base::turnEmerg();
+			return;
+		}
+		
+		float forwardVal=0;
 		//0L 1R
-		run::setMove(byte2floatMotorOutput(array[0]),byte2floatMotorOutput(array[1]));
+		if(genBoolFromButtonBit(array[2],FORWARD_BTN)){
+			forwardVal+=0.3;
+		}
+		if(genBoolFromButtonBit(array[2],REVERSE_BTN)){
+			forwardVal-=0.3;
+		}
+		
+		const float valL=byte2floatMotorOutput(array[0])+forwardVal;
+		const float valR=byte2floatMotorOutput(array[1])+forwardVal;
+		
+		run::setMove(valL,valR);
+		
+		
+		if(genBoolFromButtonBit(array[2],DEG_UP_BTN)){
+			targetDeg+=0.020;
+		}
+		if(genBoolFromButtonBit(array[2],DEG_DOWN_BTN)){
+			targetDeg-=0.020;
+		}
+		if(genBoolFromButtonBit(array[2],DEG_ZERO_BTN)){
+			targetDeg=0.0;
+			run::resetGyroAndPid();
+		}
+		run::setTargetDeg(targetDeg);
 		
 	}
 	float byte2floatMotorOutput(const uint8_t source){
@@ -97,6 +187,9 @@ namespace com{
 			return 0;
 		}
 	}
+	bool genBoolFromButtonBit(const uint8_t source,const uint8_t shift){
+		return (bool)(0x1&(source>>shift));
+	}
 	void setupCom(){
 		xbee.attach(callback(ifReceiveFromController));
 	}
@@ -112,12 +205,13 @@ namespace com{
 int main(){
 	rob::regularC printInterval(100);
 	com::setupCom();
-	
+	run::setupRun();
 	
 	//This is a test code
 	while(true){
 		if(printInterval){
-			com::printReceive();
+			//com::printReceive();
+			run::printDeg();
 		}
 		run::loopRun();
 	}

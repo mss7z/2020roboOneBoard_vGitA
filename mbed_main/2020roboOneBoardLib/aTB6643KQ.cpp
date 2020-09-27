@@ -11,11 +11,11 @@ float aTB6643KQ::set(float v){
 		v=1.0;
 	}
 	if(v<0.0){
-		a=-v;
-		b=0;
+		a=1.0+v;
+		b=1.0;
 	}else{
-		a=0;
-		b=v;
+		a=1.0;
+		b=1.0-v;
 	}
 	return v;
 }
