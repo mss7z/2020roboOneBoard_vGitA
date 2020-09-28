@@ -78,7 +78,7 @@ bool imu03aSetting::isNormal(){
 imu03aGyroAccelBase::imu03aGyroAccelBase(imu03aSPI& c,const uint8_t l,const uint8_t h):
 	LbitReg(l),HbitReg(h),com(c)
 {}
-uint16_t imu03aGyroAccelBase::getRawVal(){
+int16_t imu03aGyroAccelBase::getRawVal(){
 	int16_t rval;
 	
 	com.start();
@@ -94,8 +94,8 @@ uint16_t imu03aGyroAccelBase::getRawVal(){
 	return rval;
 }
 
-uint16_t imu03aGyro::getOffsetRaw(){
-	const int N=50;//1000
+int16_t imu03aGyro::getOffsetRaw(){
+	const int N=1000;//1000
 	long sum=0;
 	for(int i=0;i<N;i++){
 		sum+=imu03aGyroAccelBase::getRawVal();
@@ -108,14 +108,29 @@ float imu03aGyro::rawVal2DDeg(const int16_t val){
 	//定数についてはimu03aSetting::resetModuleを参照のこと
 	return (val*500.0)/(float)0x7fff;
 }
+
+void imu03aGyro::sumDdegP(){
+	deg+=((float)deltaT/1000000.0)*getDDeg();
+}
 float imu03aGyro::getDDeg(){
 	return rawVal2DDeg(imu03aGyroAccelBase::getRawVal()-offsetRawVal);
 }
+
 void imu03aGyro::resetOffset(){
 	offsetRawVal=getOffsetRaw();
 }
+/*void imu03aGyro::resetDeg(){
+	deg=0.0;
+	tc.detach();
+}
+void imu03aGyro::startDeg(){
+	tc.attach_us(callback(this,&imu03aGyro::sumDdegP),deltaT);
+}
+void imu03aGyro::stopDeg(){
+	tc.detach();
+}*/
 
-float imu03aAccel::rawVal2G(const uint16_t val){
+float imu03aAccel::rawVal2G(const int16_t val){
 	//定数についてはimu03aSetting::resetModuleを参照のこと
 	return (val*2.0)/(float)0x7fff;
 }

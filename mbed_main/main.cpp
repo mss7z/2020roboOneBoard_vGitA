@@ -51,6 +51,7 @@ namespace run{
 	
 	//内部
 	void pidAndOutput();
+	void calcDeg();
 	
 	//外部
 	void setMove(const float valL,const float valR);
@@ -72,15 +73,15 @@ namespace run{
 		/*現在角度算出*/
 		static const float degK=0.995;
 		accelDeg=(180.0/M_PI)*atanf(imu.accelY.getG()/(-imu.accelX.getG()));
+		//gyroDeg=imu.gyroZ.getDeg();
 		gyroDeg+=imu.gyroZ.getDDeg()*(CONTROL_CYCLE_TIME/1000.0);
-		deg=gyroDeg*degK+accelDeg*(1.0-degK);
+		deg=0.99*gyroDeg+0.05*accelDeg+0.05*deg;
 		
 		
 		const float controll=pid.calc(deg);
 		motorL.output(controll);
 		motorR.output(controll);
 	}
-	
 	
 	void setMove(const float valL,const float valR){
 		motorL.setBase(valL);
@@ -93,9 +94,11 @@ namespace run{
 		pid.reset();
 		imu.resetModule();
 		deg=0.0;
-		//gyro.startDeg();
+		gyroDeg=0.0;
+		//imu.gyroZ.startDeg();
 	}
 	void printDeg(){
+		pc.printf("ax:%s ay:%s dz:%s ",rob::flt(imu.accelX.getG()),rob::flt(imu.accelY.getG()),rob::flt(imu.gyroZ.getDDeg()));
 		pc.printf("deg:%s gyroDeg:%s accelDeg:%s  tagDeg:%s\n",rob::flt(deg),rob::flt(gyroDeg),rob::flt(accelDeg),rob::flt(pid.read()));
 	}
 	

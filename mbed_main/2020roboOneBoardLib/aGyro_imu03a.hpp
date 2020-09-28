@@ -56,31 +56,41 @@ class imu03aGyroAccelBase{
 	imu03aSPI &com;
 	protected:
 	imu03aGyroAccelBase(imu03aSPI&,const uint8_t l,const uint8_t h);
-	uint16_t getRawVal();
+	int16_t getRawVal();
 };
 	
 class imu03aGyro:
 	public imu03aGyroAccelBase
 {
 	private:
-	uint16_t offsetRawVal;
+	int16_t offsetRawVal;
 	
-	uint16_t getOffsetRaw();
-	uint16_t getRawVal();
+	int16_t getOffsetRaw();
 	float rawVal2DDeg(const int16_t);
+	
+	static const int deltaT=700;//us
+	Ticker tc;
+	float deg;
+	void sumDdegP();
 	
 	public:
 	imu03aGyro(imu03aSPI &c,const uint8_t l,const uint8_t h):
-		imu03aGyroAccelBase(c,l,h){}
+		imu03aGyroAccelBase(c,l,h),deg(0.0){}
 	float getDDeg();
 	void resetOffset();
+	/*
+	void resetDeg();
+	void startDeg();
+	void stopDeg();
+	
+	float getDeg(){return deg;}*/
 };
 class imu03aAccel:
 	public imu03aGyroAccelBase
 {
 	private:
 	
-	float rawVal2G(const uint16_t);
+	float rawVal2G(const int16_t);
 	
 	public:
 	imu03aAccel(imu03aSPI &c,const uint8_t l,const uint8_t h):
