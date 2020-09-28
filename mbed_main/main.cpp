@@ -37,21 +37,38 @@ namespace run{
 		void output(const float val){mtInst=constMult*(val+baseOutput);}
 		void stop(){mtInst=0.0;}
 	};
-	motor motorL(rob::tb6643kq_md3,1.0);
-	motor motorR(rob::tb6643kq_md4,-1.0);
+	motor motorL(rob::tb6643kq_md3,-1.0);
+	motor motorR(rob::tb6643kq_md4,1.0);
 	
-	const int CONTROL_CYCLE_TIME=1;//ms
+	const int CONTROL_CYCLE_TIME=5000;//us
+	const float CONTROL_CYCLE_TIME_SEC=CONTROL_CYCLE_TIME/1000000.0;//sec
 	
-	const rob::pidGain gain={0.000102,0.000,0.000015};
-	rob::aPid<float> pid(gain,CONTROL_CYCLE_TIME/1000.0);
+	//const rob::pidGain gain={0.000102,0.000,0.00001};
+	//const rob::pidGain degGain={0.001912,0.000,0.00003};
+	const rob::pidGain degGain={0.004812,0.00001,0.0000};
+	rob::aPid<float> degPid(degGain,CONTROL_CYCLE_TIME_SEC);
+	
+	//const rob::pidGain ddegGain={0.00022,0.00001,0.0000};
+	const rob::pidGain ddegGain={0.000,0000,0.0000};
+	rob::aPid<float> ddegPid(ddegGain,CONTROL_CYCLE_TIME_SEC);
+	
+	//calc(control)の時
+	//const rob::pidGain targetDegGain={0.00,0.001,0.00000};
+	//calc(control)+1.5
+	const rob::pidGain targetDegGain={0.0000,0.000001,0.00000};
+	rob::aPid<float> targetDegPid(targetDegGain,CONTROL_CYCLE_TIME_SEC);
+	
+	
+	
 	
 	rob::a_imu03a &imu=rob::imu03a;
 	float accelDeg=0.0,gyroDeg=0.0,deg=0.0;
+	float realOutputTimeVal=0.0;
 	
 	
 	//内部
 	void pidAndOutput();
-	void calcDeg();
+	float calcAccelDeg();
 	
 	//外部
 	void setMove(const float valL,const float valR);
@@ -61,7 +78,9 @@ namespace run{
 	void isEmergency(bool);
 	
 	void pidAndOutput(){
-		static rob::regularC outputTime(CONTROL_CYCLE_TIME);
+		static rob::regularC_us outputTime(CONTROL_CYCLE_TIME);
+		
+		static rob::fromPre_sec realOutputTime;
 		
 		if(!outputTime){
 			return;
@@ -71,16 +90,28 @@ namespace run{
 		}
 		
 		/*現在角度算出*/
-		static const float degK=0.995;
-		accelDeg=(180.0/M_PI)*atanf(imu.accelY.getG()/(-imu.accelX.getG()));
+		accelDeg=0.01*calcAccelDeg()+0.99*accelDeg;
 		//gyroDeg=imu.gyroZ.getDeg();
-		gyroDeg+=imu.gyroZ.getDDeg()*(CONTROL_CYCLE_TIME/1000.0);
-		deg=0.99*gyroDeg+0.05*accelDeg+0.05*deg;
+		realOutputTimeVal=realOutputTime.get();
+		//定数倍はなぜかずれるから
+		gyroDeg+=1.1365*imu.gyroZ.getDDeg()*(realOutputTimeVal);
+		deg=0.5*gyroDeg+0.5*accelDeg;
 		
 		
-		const float controll=pid.calc(deg);
+		const float controll=degPid.calc(deg)+ddegPid.calc(imu.gyroZ.getDDeg());
 		motorL.output(controll);
 		motorR.output(controll);
+		
+		/*if(imu.gyroZ.getDDeg()<0.00){
+			degPid.set(degPid.read()+0.002);
+		}else{
+			degPid.set(degPid.read()-0.002);
+		}*/
+		degPid.set(targetDegPid.calc(controll));
+		//degPid.set(targetDegPid.calc(imu.gyroZ.getDDeg()));
+	}
+	float calcAccelDeg(){
+		return (180.0/M_PI)*atanf(imu.accelY.getG()/(-imu.accelX.getG()));
 	}
 	
 	void setMove(const float valL,const float valR){
@@ -88,22 +119,29 @@ namespace run{
 		motorR.setBase(valR);
 	}
 	void setTargetDeg(const float deg){
-		pid.set(deg);
+		//degPid.set(deg);
 	}
 	void resetGyroAndPid(){
-		pid.reset();
+		degPid.reset();
+		ddegPid.reset();
 		imu.resetModule();
-		deg=0.0;
-		gyroDeg=0.0;
+		float total=0.0;
+		for(int i=0;i<20;i++){
+			total+=calcAccelDeg();
+			wait_us(625);
+		}
+		gyroDeg=deg=total/20;
 		//imu.gyroZ.startDeg();
 	}
 	void printDeg(){
-		pc.printf("ax:%s ay:%s dz:%s ",rob::flt(imu.accelX.getG()),rob::flt(imu.accelY.getG()),rob::flt(imu.gyroZ.getDDeg()));
-		pc.printf("deg:%s gyroDeg:%s accelDeg:%s  tagDeg:%s\n",rob::flt(deg),rob::flt(gyroDeg),rob::flt(accelDeg),rob::flt(pid.read()));
+		pc.printf("realT: %sus ax:%s ay:%s dz:%6s ",rob::flt(realOutputTimeVal*1000000.0),rob::flt(imu.accelX.getG()),rob::flt(imu.accelY.getG()),rob::flt(imu.gyroZ.getDDeg()));
+		pc.printf("deg:%s gyroDeg:%s accelDeg:%s  tagDeg:%s\n",rob::flt(deg),rob::flt(gyroDeg),rob::flt(accelDeg),rob::flt(degPid.read()));
 	}
 	
 	void setupRun(){
 		resetGyroAndPid();
+		//setTargetDeg(1.3);
+		ddegPid.set(0.0);
 		/*35.7,28.3,34.9,35.7,34.5,30.7,31.2,29.5,33.2,33.6*/
 		//gyro.setDeg(-32.73);
 	}
@@ -122,7 +160,7 @@ namespace com{
 	uint8_t receiveArray[255]={0};
 	uint16_t receiveSize=0;
 	
-	float targetDeg=0;
+	float targetDeg=2.0;
 	
 	//内部
 	void ifReceiveFromController(uint8_t*,uint16_t);
@@ -179,7 +217,7 @@ namespace com{
 			targetDeg-=0.020;
 		}
 		if(genBoolFromButtonBit(array[2],DEG_ZERO_BTN)){
-			targetDeg=0.0;
+			targetDeg=2.0;
 			run::resetGyroAndPid();
 		}
 		run::setTargetDeg(targetDeg);
@@ -216,7 +254,7 @@ namespace com{
 }
 
 int main(){
-	rob::regularC printInterval(100);
+	rob::regularC_ms printInterval(100);
 	com::setupCom();
 	run::setupRun();
 	

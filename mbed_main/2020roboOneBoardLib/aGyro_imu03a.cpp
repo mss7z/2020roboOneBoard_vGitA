@@ -50,6 +50,11 @@ void imu03aSetting::resetModule(){
 	//(XL_BW_SCAL_ODR=0 のため 1.66kHzでは400Hz)
 	com.start();
 	com.write(0x10);
+	com.write(0b10000011);
+	com.end();
+	
+	com.start();
+	com.write(0x13);
 	com.write(0b10000000);
 	com.end();
 	

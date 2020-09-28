@@ -27,13 +27,13 @@ namespace arduino{
 	}
 }
 
-class regularC{
+class regularC_ms{
 private:
 	unsigned long interval;
 	unsigned long nextTime;
 	Timer t;
 public:
-	regularC(unsigned long intervalArg,unsigned long start=0):
+	regularC_ms(unsigned long intervalArg,unsigned long start=0):
 	interval(intervalArg)
 	{
 		t.start();
@@ -42,6 +42,31 @@ public:
 	bool ist(){
 		if(nextTime<(unsigned long)t.read_ms()){
 			nextTime=interval+t.read_ms();
+			return true;
+		}else{
+			return false;
+		}
+	}
+	void set(unsigned long val){interval=val;}
+	unsigned long read(){return interval;}
+	operator bool(){return ist();}
+};
+//35分以上使うな！！！
+class regularC_us{
+private:
+	unsigned long interval;
+	unsigned long nextTime;
+	Timer t;
+public:
+	regularC_us(unsigned long intervalArg,unsigned long start=0):
+	interval(intervalArg)
+	{
+		t.start();
+		nextTime=start;
+	}
+	bool ist(){
+		if(nextTime<(unsigned long)t.read_us()){
+			nextTime=interval+t.read_us();
 			return true;
 		}else{
 			return false;
@@ -78,6 +103,26 @@ public:
 	}
 	void set(T val){
 		preVal=val;
+	}
+};
+
+class fromPre_sec{
+	private:
+	float pre;
+	Timer t;
+	public:
+	fromPre_sec(){
+		t.start();
+		pre=t.read();
+	}
+	float get(){
+		const float now=t.read();
+		const float ret=now-pre;
+		pre=now;
+		return ret;
+	}
+	operator float(){
+		return get();
 	}
 };
 
