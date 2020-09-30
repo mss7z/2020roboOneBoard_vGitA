@@ -1,4 +1,5 @@
 
+
 #define ARRAYLEN(X) (sizeof(X)/sizeof(X[0]))
 
 #include "lib.h"
@@ -9,6 +10,8 @@
 #include <SoftwareSerial.h>
 //                    TX RX
 SoftwareSerial dcom(A4,A5,false);
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(8,A0,9,10,11,12);
 
 class regularC{
 private:
@@ -58,9 +61,11 @@ namespace com{
   void loopCom();
   byte genButtonBit(const int val, const byte shift);
   void sendControll();
+  void printLcd(uint8_t[],uint16_t);
 
   void setupCom(){
     xbeeSerial.begin(38400);
+    xbee.attach(printLcd);
   }
   void loopCom(){
     static regularC sendInterval(100);
@@ -68,6 +73,7 @@ namespace com{
     if(sendInterval){
       sendControll();
     }
+    xbeeCore.check();
   }
 
   byte genButtonBit(const int val,const byte shift){
@@ -97,11 +103,19 @@ namespace com{
     };
     xbee.send(sendArray,ARRAYLEN(sendArray));
   }
+  void printLcd(uint8_t array[],uint16_t arrayLen){
+    if(arrayLen<2){
+      return;
+    }
+    lcd.setCursor(array[0],array[1]);
+    lcd.print((char*)(array+2));
+  }
 }
 void setup() {
   //dcom
   dcom.begin(9600);
   PSX.mode(PS,MODE_ANALOG,MODE_LOCK);
+  lcd.begin(16,2);
   //Serial.begin(38400);
   //Serial.print("hello");
   com::setupCom();
@@ -109,4 +123,5 @@ void setup() {
 
 void loop() {
   com::loopCom();
+  
 }

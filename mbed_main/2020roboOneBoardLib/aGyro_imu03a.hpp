@@ -49,18 +49,18 @@ class imu03aSetting{
 	void resetModule();
 	bool isNormal();
 };
-class imu03aGyroAccelBase{
+class imu03aGyroAndAccelBase{
 	private:
 	const uint8_t LbitReg;
 	const uint8_t HbitReg;
 	imu03aSPI &com;
 	protected:
-	imu03aGyroAccelBase(imu03aSPI&,const uint8_t l,const uint8_t h);
+	imu03aGyroAndAccelBase(imu03aSPI&,const uint8_t l,const uint8_t h);
 	int16_t getRawVal();
 };
 	
 class imu03aGyro:
-	public imu03aGyroAccelBase
+	public imu03aGyroAndAccelBase
 {
 	private:
 	int16_t offsetRawVal;
@@ -75,7 +75,7 @@ class imu03aGyro:
 	
 	public:
 	imu03aGyro(imu03aSPI &c,const uint8_t l,const uint8_t h):
-		imu03aGyroAccelBase(c,l,h),deg(0.0){}
+		imu03aGyroAndAccelBase(c,l,h),deg(0.0){}
 	float getDDeg();
 	void resetOffset();
 	/*
@@ -86,7 +86,7 @@ class imu03aGyro:
 	float getDeg(){return deg;}*/
 };
 class imu03aAccel:
-	public imu03aGyroAccelBase
+	public imu03aGyroAndAccelBase
 {
 	private:
 	
@@ -94,11 +94,11 @@ class imu03aAccel:
 	
 	public:
 	imu03aAccel(imu03aSPI &c,const uint8_t l,const uint8_t h):
-		imu03aGyroAccelBase(c,l,h){}
+		imu03aGyroAndAccelBase(c,l,h){}
 	float getG();
 	float getMperS2();
 };
-	
+
 class a_imu03a{
 	private:
 	imu03aSPI com;

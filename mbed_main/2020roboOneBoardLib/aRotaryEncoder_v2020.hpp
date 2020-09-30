@@ -17,6 +17,7 @@ namespace aRotaryEncoder_v2020_internal{
 		int diff;
 		
 		void BphsRiseProcF();
+		void BphsFallProcF();
 		
 	public:
 		aRotaryEncoder(PinName AphsPin,PinName BphsPin,PinMode mode=PullNone,bool isForward=true);

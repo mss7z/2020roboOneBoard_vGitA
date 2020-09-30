@@ -46,8 +46,7 @@ void imu03aSetting::resetModule(){
 	
 	//CTRL1_XL に設定値を書きこんでacceleration sensorを起動
 	//設定値は1.66kHz +-2g
-	//Anti-aliasing filter bandwidth(これより高い周波数成分を消すlowpass filter) 400Hz
-	//(XL_BW_SCAL_ODR=0 のため 1.66kHzでは400Hz)
+	//Anti-aliasing filter bandwidth(これより高い周波数成分を消すlowpass filter) 50Hz
 	com.start();
 	com.write(0x10);
 	com.write(0b10000011);
@@ -80,10 +79,10 @@ bool imu03aSetting::isNormal(){
 	return (val==0x69);
 }
 
-imu03aGyroAccelBase::imu03aGyroAccelBase(imu03aSPI& c,const uint8_t l,const uint8_t h):
+imu03aGyroAndAccelBase::imu03aGyroAndAccelBase(imu03aSPI& c,const uint8_t l,const uint8_t h):
 	LbitReg(l),HbitReg(h),com(c)
 {}
-int16_t imu03aGyroAccelBase::getRawVal(){
+int16_t imu03aGyroAndAccelBase::getRawVal(){
 	int16_t rval;
 	
 	com.start();
@@ -103,7 +102,7 @@ int16_t imu03aGyro::getOffsetRaw(){
 	const int N=1000;//1000
 	long sum=0;
 	for(int i=0;i<N;i++){
-		sum+=imu03aGyroAccelBase::getRawVal();
+		sum+=imu03aGyroAndAccelBase::getRawVal();
 		wait_us(625);
 	}
 	return sum/N;
@@ -118,7 +117,7 @@ void imu03aGyro::sumDdegP(){
 	deg+=((float)deltaT/1000000.0)*getDDeg();
 }
 float imu03aGyro::getDDeg(){
-	return rawVal2DDeg(imu03aGyroAccelBase::getRawVal()-offsetRawVal);
+	return rawVal2DDeg(imu03aGyroAndAccelBase::getRawVal()-offsetRawVal);
 }
 
 void imu03aGyro::resetOffset(){
@@ -140,7 +139,7 @@ float imu03aAccel::rawVal2G(const int16_t val){
 	return (val*2.0)/(float)0x7fff;
 }
 float imu03aAccel::getG(){
-	return rawVal2G(imu03aGyroAccelBase::getRawVal());
+	return rawVal2G(imu03aGyroAndAccelBase::getRawVal());
 }
 float imu03aAccel::getMperS2(){
 	//1G=9.80665m/s^2

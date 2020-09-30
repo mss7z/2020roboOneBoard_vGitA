@@ -14,8 +14,10 @@ namespace aRotaryEncoder_v2020_internal{
 		BphsInter.mode(mode);
 		if(isForward){
 			BphsInter.rise(callback(this, &aRotaryEncoder::BphsRiseProcF));
+			BphsInter.fall(callback(this, &aRotaryEncoder::BphsFallProcF));
 		}else{
 			BphsInter.fall(callback(this, &aRotaryEncoder::BphsRiseProcF));
+			BphsInter.rise(callback(this, &aRotaryEncoder::BphsFallProcF));
 		}
 		val=0;
 		diff=0;
@@ -26,6 +28,13 @@ namespace aRotaryEncoder_v2020_internal{
 			val++;
 		else
 			val--;
+		return;
+	}
+	void aRotaryEncoder::BphsFallProcF(){
+		if(Aphs)
+			val--;
+		else
+			val++;
 		return;
 	}
 
