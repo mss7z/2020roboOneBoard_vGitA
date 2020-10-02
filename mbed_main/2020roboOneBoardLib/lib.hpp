@@ -29,7 +29,8 @@ aTB6643KQ tb6643kq_md4(PB_10,PB_5);
 #endif
 
 #ifdef ENABLE_rotaryEncoder1
-aRotaryEncoder rotaryEncoder1(PA_11,PA_12,PullDown);
+//aRotaryEncoder rotaryEncoder1(PA_11,PA_12,PullDown);
+aRotaryEncoder rotaryEncoder1(PA_11,PC_4,PullDown);
 #endif
 
 #ifdef ENABLE_rotaryEncoder2

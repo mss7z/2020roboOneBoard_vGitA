@@ -4,7 +4,7 @@
 //#define ENABLE_tb6643kq_md2
 #define ENABLE_tb6643kq_md3
 #define ENABLE_tb6643kq_md4
-//#define ENABLE_rotaryEncoder1
+#define ENABLE_rotaryEncoder1
 #define ENABLE_rotaryEncoder2
 #define ENABLE_imu03a
 #define ENABLE_xbeeCore
@@ -45,7 +45,7 @@ namespace run{
 	
 	//const rob::pidGain gain={0.000102,0.000,0.00001};
 	//const rob::pidGain degGain={0.001912,0.000,0.00003};
-	const rob::pidGain degGain={0.004812,0.00001,0.0000};
+	const rob::pidGain degGain={0.012812,0.00001,0.0000};
 	rob::aPid<float> degPid(degGain,CONTROL_CYCLE_TIME_SEC);
 	
 	//const rob::pidGain ddegGain={0.00022,0.00001,0.0000};
@@ -55,7 +55,7 @@ namespace run{
 	//calc(control)の時
 	//const rob::pidGain targetDegGain={0.00,0.001,0.00000};
 	//calc(controlSum)の時
-	const rob::pidGain targetDegGain={0.001,0.00,0.00000};
+	const rob::pidGain targetDegGain={0.00,0.01,0.0000};
 	//calc(control)+1.5
 	//const rob::pidGain targetDegGain={0.0000,0.000001,0.00000};
 	rob::aPid<float> targetDegPid(targetDegGain,CONTROL_CYCLE_TIME_SEC);
@@ -99,7 +99,15 @@ namespace run{
 		const float controll=degPid.calc(deg)+ddegPid.calc(imu.gyroZ.getDDeg());
 		motorL.output(controll);
 		motorR.output(controll);
+		
 		controllSum+=controll;
+		const float controllSumLimit=100.0;
+		if(controllSum>controllSumLimit){
+			controllSum=controllSumLimit;
+		}
+		if(controllSum<-controllSumLimit){
+			controllSum=-controllSumLimit;
+		}
 		
 		/*if(imu.gyroZ.getDDeg()<0.00){
 			degPid.set(degPid.read()+0.002);
