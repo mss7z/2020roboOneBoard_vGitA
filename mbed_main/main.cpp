@@ -23,6 +23,8 @@ namespace base{
 	bool turnEmerg(){
 		return isEmergVal=!isEmergVal;
 	}
+	
+	const float TARGET_DEG_INIT=34.628;
 }
 
 namespace run{
@@ -45,8 +47,10 @@ namespace run{
 	
 	//const rob::pidGain gain={0.000102,0.000,0.00001};
 	//const rob::pidGain degGain={0.001912,0.000,0.00003};
-	const rob::pidGain degGain={0.012812,0.00001,0.0000};
-	rob::aPid<float> degPid(degGain,CONTROL_CYCLE_TIME_SEC);
+	//const rob::pidGain degGain={0.001812,0.00001,0.0000};
+	float degGainP=0.001812;float degGainI=0.00355;float degGainD=0.0001;
+	//float degGainP=0.001812;float degGainI=0.000013;float degGainD=0.00;
+	rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,1.0,-1.0);
 	
 	//const rob::pidGain ddegGain={0.00022,0.00001,0.0000};
 	const rob::pidGain ddegGain={0.000,0000,0.0000};
@@ -66,6 +70,7 @@ namespace run{
 	float realOutputTimeVal=0.0;
 	
 	float userControll=0.0;
+	float controll=0.0;
 	float controllSum=0.0;
 	
 	
@@ -96,7 +101,7 @@ namespace run{
 		//calcDegByImu();
 		calcDegByRorycon();
 		
-		const float controll=degPid.calc(deg)+ddegPid.calc(imu.gyroZ.getDDeg());
+		/*const float */controll=degPid.calc(deg);//+ddegPid.calc(imu.gyroZ.getDDeg());
 		motorL.output(controll);
 		motorR.output(controll);
 		
@@ -115,7 +120,7 @@ namespace run{
 			degPid.set(degPid.read()-0.002);
 		}*/
 		//degPid.set(targetDegPid.calc(controll)+userControll);
-		degPid.set(targetDegPid.calc(controllSum)+userControll);
+		//degPid.set(targetDegPid.calc(controllSum)+userControll);
 		//degPid.set(targetDegPid.calc(imu.gyroZ.getDDeg()));
 	}
 	float calcAccelDeg(){
@@ -133,6 +138,9 @@ namespace run{
 	}
 	void calcDegByRorycon(){
 		const int pulsePerRevolution=2048*2;
+		if(rorycon.read()>0){
+			rorycon.set(0);
+		}
 		deg=-(360.0*rorycon.read())/pulsePerRevolution;
 	}
 	
@@ -141,20 +149,21 @@ namespace run{
 		motorR.setBase(valR);
 	}
 	void setTargetDeg(const float deg){
-		//degPid.set(deg);
-		userControll=deg;
+		degPid.set(deg);
+		//userControll=deg;
 	}
 	void resetGyroAndPid(){
 		degPid.reset();
 		ddegPid.reset();
-		imu.resetModule();
+		/*imu.resetModule();
 		float total=0.0;
 		for(int i=0;i<20;i++){
 			total+=calcAccelDeg();
 			wait_us(625);
 		}
-		gyroDeg=deg=total/20;
+		gyroDeg=deg=total/20;*/
 		//imu.gyroZ.startDeg();
+		
 	}
 	void printDeg(){
 		pc.printf("realT: %sus ax:%s ay:%s dz:%6s ",rob::flt(realOutputTimeVal*1000000.0),rob::flt(imu.accelX.getG()),rob::flt(imu.accelY.getG()),rob::flt(imu.gyroZ.getDDeg()));
@@ -166,6 +175,7 @@ namespace run{
 		resetGyroAndPid();
 		//setTargetDeg(1.3);
 		ddegPid.set(0.0);
+		degPid.set(base::TARGET_DEG_INIT);
 		/*35.7,28.3,34.9,35.7,34.5,30.7,31.2,29.5,33.2,33.6*/
 		//gyro.setDeg(-32.73);
 	}
@@ -175,6 +185,7 @@ namespace run{
 			motorL.stop();
 			motorR.stop();
 		}
+		degPid.setGain(degGainP,degGainI,degGainD);
 	}
 }
 
@@ -184,7 +195,8 @@ namespace com{
 	uint8_t receiveArray[255]={0};
 	uint16_t receiveSize=0;
 	
-	float targetDeg=2.0;
+	const float TARGET_DEG_INIT=base::TARGET_DEG_INIT;
+	float targetDeg=TARGET_DEG_INIT;
 	const uint8_t MAX_LCD_STRLEN=100;
 	
 	//内部
@@ -196,6 +208,46 @@ namespace com{
 	//外部
 	void setupCom();
 	void printLcd(const uint8_t col,const uint8_t row, const char str[]);
+	
+	
+	class ajustFloat{
+		private:
+		static const int nameLen=16;
+		float *valP;
+		const float step;
+		char name[nameLen];
+		
+		public:
+		ajustFloat(const char n[],float *p,float st):valP(p),step(st){
+			for(int i=0;i<nameLen;i++){name[i]=n[i];if(n[i]=='\0'){break;}}
+		}
+		void up(){*valP+=step;}
+		void down(){*valP-=step;}
+		void print(){printLcd(0,1,rob::flt(*valP,5));}
+		void printAll(){/*printLcd(0,0,name);*/print();}
+	};
+	ajustFloat ajustFloatArray[]={
+		ajustFloat("targetDeg",&targetDeg,0.05),
+		ajustFloat("degGainP",&run::degGainP,0.0001),
+		ajustFloat("degGainI",&run::degGainI,0.0001),
+		ajustFloat("degGainD",&run::degGainD,0.0001),
+	};
+	class ajustFloatManager{
+		private:
+		ajustFloat *array;
+		const int end;
+		static const int start=0;
+		int now;
+		public:
+		ajustFloatManager(ajustFloat *ar,const int len):array(ar),end(len-1),now(start){}
+		void printAll(){array[now].printAll();}
+		void next(){if(now==end){now=start;}else{now++;}printAll();}
+		void back(){if(now==start){now=end;}else{now--;}printAll();}
+		void print(){array[now].print();}
+		void up(){array[now].up();}
+		void down(){array[now].down();}
+	};
+	ajustFloatManager ajust(ajustFloatArray,ARRAYLEN(ajustFloatArray));
 	
 	void ifReceiveFromController(uint8_t *array,uint16_t size){
 		for(int i=0;i<size;i++){
@@ -209,8 +261,10 @@ namespace com{
 		}
 		
 		enum{
-			FORWARD_BTN,
-			REVERSE_BTN,
+			UP_BTN,
+			DOWN_BTN,
+			RIGHT_BTN,
+			LEFT_BTN,
 			DEG_UP_BTN,
 			DEG_DOWN_BTN,
 			DEG_ZERO_BTN,
@@ -222,6 +276,7 @@ namespace com{
 			return;
 		}
 		
+		/*
 		float forwardVal=0;
 		//0L 1R
 		if(genBoolFromButtonBit(array[2],FORWARD_BTN)){
@@ -235,20 +290,34 @@ namespace com{
 		const float valR=byte2floatMotorOutput(array[1])+forwardVal;
 		
 		run::setMove(valL,valR);
+		*/
 		
+		if(genBoolFromButtonBit(array[2],UP_BTN)){
+			ajust.up();
+		}
+		if(genBoolFromButtonBit(array[2],DOWN_BTN)){
+			ajust.down();
+		}
+		if(genBoolFromButtonBit(array[2],RIGHT_BTN)){
+			ajust.next();
+		}
+		if(genBoolFromButtonBit(array[2],LEFT_BTN)){
+			ajust.back();
+		}
+		ajust.print();
 		
-		if(genBoolFromButtonBit(array[2],DEG_UP_BTN)){
+		/*if(genBoolFromButtonBit(array[2],DEG_UP_BTN)){
 			targetDeg+=0.040;
 		}
 		if(genBoolFromButtonBit(array[2],DEG_DOWN_BTN)){
 			targetDeg-=0.040;
-		}
+		}*/
 		if(genBoolFromButtonBit(array[2],DEG_ZERO_BTN)){
-			targetDeg=0.0;
+			targetDeg=TARGET_DEG_INIT;
 			//run::resetGyroAndPid();
 		}
 		run::setTargetDeg(targetDeg);
-		
+		//printLcd(0,1,rob::flt(targetDeg));
 	}
 	float byte2floatMotorOutput(const uint8_t source){
 		using namespace rob::arduino;
@@ -270,6 +339,13 @@ namespace com{
 	}
 	void setupCom(){
 		xbee.attach(callback(ifReceiveFromController));
+	}
+	void loopCom(){
+		static rob::regularC_ms printLcdTime(100);
+		if(printLcdTime){
+			//printLcd(0,0,rob::flt(run::deg-run::degPid.read()));
+			printLcd(0,0,rob::flt(run::controll));
+		}
 	}
 	void printReceive(){
 		pc.printf("size:%3d",receiveSize);
@@ -297,6 +373,7 @@ namespace com{
 		}
 		xbee.send(array,arrayLen);
 	}
+	
 }
 
 int main(){
@@ -313,6 +390,7 @@ int main(){
 			run::printDeg();
 		}
 		run::loopRun();
+		com::loopCom();
 	}
 	
     return 0;

@@ -83,15 +83,19 @@ namespace com{
     PSX.updateState(PS);
     byte buttonBit=0;
     enum{
-      FORWARD_BTN,
-      REVERSE_BTN,
+      UP_BTN,
+      DOWN_BTN,
+      RIGHT_BTN,
+      LEFT_BTN,
       DEG_UP_BTN,
       DEG_DOWN_BTN,
       DEG_ZERO_BTN,
       KILL_BTN,
     };
-    buttonBit|=genButtonBit(IS_DOWN_UP(PS),FORWARD_BTN);
-    buttonBit|=genButtonBit(IS_DOWN_DOWN(PS),REVERSE_BTN);
+    buttonBit|=genButtonBit(IS_DOWN_UP(PS),UP_BTN);
+    buttonBit|=genButtonBit(IS_DOWN_DOWN(PS),DOWN_BTN);
+    buttonBit|=genButtonBit(IS_DOWN_RIGHT(PS),RIGHT_BTN);
+    buttonBit|=genButtonBit(IS_DOWN_LEFT(PS),LEFT_BTN);
     buttonBit|=genButtonBit(IS_DOWN_TRIANGLE(PS),DEG_UP_BTN);
     buttonBit|=genButtonBit(IS_DOWN_CROSS(PS),DEG_DOWN_BTN);
     buttonBit|=genButtonBit(IS_DOWN_CIRCLE(PS),DEG_ZERO_BTN);
