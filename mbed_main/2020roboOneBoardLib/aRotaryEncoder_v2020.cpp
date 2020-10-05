@@ -8,16 +8,22 @@ namespace aRotaryEncoder_v2020_internal{
 	*/
 	aRotaryEncoder::aRotaryEncoder(PinName AphsPin,PinName BphsPin,PinMode mode,bool isForward):
 		Aphs(AphsPin),//ここで初期化
-		BphsInter(BphsPin)
+		Bphs(BphsPin)
 	{
 		Aphs.mode(mode);
-		BphsInter.mode(mode);
+		Bphs.mode(mode);
 		if(isForward){
-			BphsInter.rise(callback(this, &aRotaryEncoder::BphsRiseProcF));
-			BphsInter.fall(callback(this, &aRotaryEncoder::BphsFallProcF));
+			Bphs.rise(callback(this, &aRotaryEncoder::BphsRiseProcF));
+			Bphs.fall(callback(this, &aRotaryEncoder::BphsFallProcF));
+			
+			Aphs.rise(callback(this, &aRotaryEncoder::AphsRiseProcF));
+			Aphs.fall(callback(this, &aRotaryEncoder::AphsFallProcF));
 		}else{
-			BphsInter.fall(callback(this, &aRotaryEncoder::BphsRiseProcF));
-			BphsInter.rise(callback(this, &aRotaryEncoder::BphsFallProcF));
+			Bphs.fall(callback(this, &aRotaryEncoder::BphsRiseProcF));
+			Bphs.rise(callback(this, &aRotaryEncoder::BphsFallProcF));
+			
+			Aphs.fall(callback(this, &aRotaryEncoder::AphsRiseProcF));
+			Aphs.rise(callback(this, &aRotaryEncoder::AphsFallProcF));
 		}
 		val=0;
 		diff=0;
@@ -35,6 +41,20 @@ namespace aRotaryEncoder_v2020_internal{
 			val--;
 		else
 			val++;
+		return;
+	}
+	void aRotaryEncoder::AphsRiseProcF(){
+		if(Bphs)
+			val--;
+		else
+			val++;
+		return;
+	}
+	void aRotaryEncoder::AphsFallProcF(){
+		if(Bphs)
+			val++;
+		else
+			val--;
 		return;
 	}
 

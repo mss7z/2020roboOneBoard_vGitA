@@ -39,7 +39,18 @@ namespace __flt_internal__{
 		}
 		return ans;
 	}
-	int addUint(uint32_t val){
+	int addUint(uint32_t val,int maxk){
+		int printed=maxk+1;
+		for(;maxk>=0;maxk--){
+			uint32_t h=intPow10(maxk);
+			int k=(val/h);
+			add(k+'0');
+			val-=(k*h);
+		}
+		return printed;
+	}
+	int addUintNonTopZero(uint32_t val){
+		//pc.printf("addUint %d\n",val);
 		int maxk=1;
 		while(true){
 			if(maxk>=9){
@@ -51,14 +62,7 @@ namespace __flt_internal__{
 			}
 			maxk++;
 		}
-		int printed=maxk+1;
-		for(;maxk>=0;maxk--){
-			uint32_t h=intPow10(maxk);
-			int k=(val/h);
-			add(k+'0');
-			val-=(k*h);
-		}
-		return printed;
+		return addUint(val,maxk);
 	}
 	char *flt(float val,const int decimal){
 		char *s=newBuf();
@@ -71,14 +75,14 @@ namespace __flt_internal__{
 			val*=-1.0;
 		}
 		uint32_t beforeDecimal=(uint32_t)val;
-		if(addUint(beforeDecimal)==-1){
+		if(addUintNonTopZero(beforeDecimal)==-1){
 			s=newBuf();
 			pltMsg("TOO_LARGE_VAL_ERR");
 			return s;
 		}
 		add('.');
 		int printed;
-		if( (printed=addUint(((val-(float)beforeDecimal)*intPow10(decimal))))==-1 ){
+		if( (printed=addUint(((val-(float)beforeDecimal)*intPow10(decimal)),decimal-1))==-1 ){
 			s=newBuf();
 			pltMsg("INT_ERR_PLS_DEBUG");
 			return s;

@@ -10,14 +10,18 @@ namespace rob{
 namespace aRotaryEncoder_v2020_internal{
 	class aRotaryEncoder {
 	private:
-		DigitalIn Aphs;
-		InterruptIn BphsInter;
+		//DigitalIn Aphs;
+		InterruptIn Aphs;
+		InterruptIn Bphs;
 		
 		int val;
 		int diff;
 		
 		void BphsRiseProcF();
 		void BphsFallProcF();
+		
+		void AphsRiseProcF();
+		void AphsFallProcF();
 		
 	public:
 		aRotaryEncoder(PinName AphsPin,PinName BphsPin,PinMode mode=PullNone,bool isForward=true);

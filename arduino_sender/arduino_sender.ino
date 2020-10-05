@@ -94,15 +94,15 @@ namespace com{
     };
     buttonBit|=genButtonBit(IS_DOWN_UP(PS),UP_BTN);
     buttonBit|=genButtonBit(IS_DOWN_DOWN(PS),DOWN_BTN);
-    buttonBit|=genButtonBit(IS_DOWN_RIGHT(PS),RIGHT_BTN);
-    buttonBit|=genButtonBit(IS_DOWN_LEFT(PS),LEFT_BTN);
+    buttonBit|=genButtonBit(PRESSED_RIGHT(PS),RIGHT_BTN);
+    buttonBit|=genButtonBit(PRESSED_LEFT(PS),LEFT_BTN);
     buttonBit|=genButtonBit(IS_DOWN_TRIANGLE(PS),DEG_UP_BTN);
     buttonBit|=genButtonBit(IS_DOWN_CROSS(PS),DEG_DOWN_BTN);
     buttonBit|=genButtonBit(IS_DOWN_CIRCLE(PS),DEG_ZERO_BTN);
     buttonBit|=genButtonBit(PRESSED_SQUARE(PS),KILL_BTN);
     byte sendArray[]={
-      ANALOG_LEFT_Y(PS),
       ANALOG_RIGHT_Y(PS),
+      ANALOG_RIGHT_X(PS),
       buttonBit,
     };
     xbee.send(sendArray,ARRAYLEN(sendArray));

@@ -24,7 +24,9 @@ namespace base{
 		return isEmergVal=!isEmergVal;
 	}
 	
-	const float TARGET_DEG_INIT=34.628;
+	//const float TARGET_DEG_INIT=34.628;
+	//const float TARGET_DEG_INIT=32.676;
+	const float TARGET_DEG_INIT=30.876;
 }
 
 namespace run{
@@ -48,7 +50,13 @@ namespace run{
 	//const rob::pidGain gain={0.000102,0.000,0.00001};
 	//const rob::pidGain degGain={0.001912,0.000,0.00003};
 	//const rob::pidGain degGain={0.001812,0.00001,0.0000};
-	float degGainP=0.001812;float degGainI=0.00355;float degGainD=0.0001;
+	//pid P:0.00181200 I:0.01714998 D:0.00010000
+	//そこそこ？float degGainP=0.001812;float degGainI=0.01479;float degGainD=0.000088;
+	//float degGainP=0.003912;float degGainI=0.03189;float degGainD=0.0000929;//体育間1
+	//float degGainP=0.006811;float degGainI=0.00949;float degGainD=0.0000617;//体育館2
+	float degGainP=0.003211;float degGainI=0.02038;float degGainD=0.0000721;//体育館2
+	
+	
 	//float degGainP=0.001812;float degGainI=0.000013;float degGainD=0.00;
 	rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,1.0,-1.0);
 	
@@ -137,7 +145,7 @@ namespace run{
 		deg=0.5*gyroDeg+0.5*accelDeg;
 	}
 	void calcDegByRorycon(){
-		const int pulsePerRevolution=2048*2;
+		const int pulsePerRevolution=2048*4;
 		if(rorycon.read()>0){
 			rorycon.set(0);
 		}
@@ -148,9 +156,13 @@ namespace run{
 		motorL.setBase(valL);
 		motorR.setBase(valR);
 	}
+	float degAdd=0.0;
 	void setTargetDeg(const float deg){
-		degPid.set(deg);
+		degPid.set(degAdd+deg);
 		//userControll=deg;
+	}
+	void setTargetDegAdd(const float deg){
+		degAdd=deg;
 	}
 	void resetGyroAndPid(){
 		degPid.reset();
@@ -166,9 +178,10 @@ namespace run{
 		
 	}
 	void printDeg(){
-		pc.printf("realT: %sus ax:%s ay:%s dz:%6s ",rob::flt(realOutputTimeVal*1000000.0),rob::flt(imu.accelX.getG()),rob::flt(imu.accelY.getG()),rob::flt(imu.gyroZ.getDDeg()));
-		pc.printf("deg:%s gyroDeg:%s accelDeg:%s  tagDeg:%s\n",rob::flt(deg),rob::flt(gyroDeg),rob::flt(accelDeg),rob::flt(degPid.read()));
-		
+		using namespace rob;
+		//pc.printf("realT: %sus ax:%s ay:%s dz:%6s ",rob::flt(realOutputTimeVal*1000000.0),rob::flt(imu.accelX.getG()),rob::flt(imu.accelY.getG()),rob::flt(imu.gyroZ.getDDeg()));
+		//pc.printf("deg:%s gyroDeg:%s accelDeg:%s  tagDeg:%s\n",rob::flt(deg),rob::flt(gyroDeg),rob::flt(accelDeg),rob::flt(degPid.read()));
+		pc.printf("pid P:%s I:%s D:%s  deg:%s\n",flt(degGainP,8),flt(degGainI,8),flt(degGainD,8),flt(deg));
 	}
 	
 	void setupRun(){
@@ -220,17 +233,18 @@ namespace com{
 		public:
 		ajustFloat(const char n[],float *p,float st):valP(p),step(st){
 			for(int i=0;i<nameLen;i++){name[i]=n[i];if(n[i]=='\0'){break;}}
+			pc.printf("%s\n",rob::flt(0.0001,4));
 		}
-		void up(){*valP+=step;}
+		void up(){(*valP)+=step;pc.printf("%s\n",rob::flt(step,7));}
 		void down(){*valP-=step;}
-		void print(){printLcd(0,1,rob::flt(*valP,5));}
-		void printAll(){/*printLcd(0,0,name);*/print();}
+		void print(){printLcd(1,1,rob::flt(*valP,7));}
+		void printAll(){printLcd(0,1,name);print();}
 	};
 	ajustFloat ajustFloatArray[]={
-		ajustFloat("targetDeg",&targetDeg,0.05),
-		ajustFloat("degGainP",&run::degGainP,0.0001),
-		ajustFloat("degGainI",&run::degGainI,0.0001),
-		ajustFloat("degGainD",&run::degGainD,0.0001),
+		ajustFloat("t          ",&targetDeg,0.05),
+		ajustFloat("P          ",&run::degGainP,0.0001),
+		ajustFloat("I          ",&run::degGainI,0.0001),
+		ajustFloat("D          ",&run::degGainD,0.0000001),
 	};
 	class ajustFloatManager{
 		private:
@@ -292,6 +306,11 @@ namespace com{
 		run::setMove(valL,valR);
 		*/
 		
+		const float rotation=byte2floatMotorOutput(array[1])*0.2;
+		run::setMove(rotation,-rotation);
+		
+		run::setTargetDegAdd(byte2floatMotorOutput(array[0])*0.5);
+		
 		if(genBoolFromButtonBit(array[2],UP_BTN)){
 			ajust.up();
 		}
@@ -322,7 +341,7 @@ namespace com{
 	float byte2floatMotorOutput(const uint8_t source){
 		using namespace rob::arduino;
 		const uint8_t ZERO_VAL=128;
-		const uint8_t ZERO_RANGE=50;//+-
+		const uint8_t ZERO_RANGE=80;//+-
 		
 		if(source<(ZERO_VAL-ZERO_RANGE)){
 			//ゼロでないマイナス範囲の値の時！
@@ -344,7 +363,8 @@ namespace com{
 		static rob::regularC_ms printLcdTime(100);
 		if(printLcdTime){
 			//printLcd(0,0,rob::flt(run::deg-run::degPid.read()));
-			printLcd(0,0,rob::flt(run::controll));
+			printLcd(0,0,"o");
+			printLcd(1,0,rob::flt(run::controll));
 		}
 	}
 	void printReceive(){
