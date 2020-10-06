@@ -26,7 +26,8 @@ namespace base{
 	
 	//const float TARGET_DEG_INIT=34.628;
 	//const float TARGET_DEG_INIT=32.676;
-	const float TARGET_DEG_INIT=30.876;
+	///const float TARGET_DEG_INIT=30.876;
+	const float TARGET_DEG_INIT=35.4;
 }
 
 namespace run{
@@ -54,7 +55,8 @@ namespace run{
 	//そこそこ？float degGainP=0.001812;float degGainI=0.01479;float degGainD=0.000088;
 	//float degGainP=0.003912;float degGainI=0.03189;float degGainD=0.0000929;//体育間1
 	//float degGainP=0.006811;float degGainI=0.00949;float degGainD=0.0000617;//体育館2
-	float degGainP=0.003211;float degGainI=0.02038;float degGainD=0.0000721;//体育館2
+	//float degGainP=0.003211;float degGainI=0.01038;float degGainD=0.0000721;//体育館2
+	float degGainP=0.00821;float degGainI=0.01748;float degGainD=0.0000721;//体育館2
 	
 	
 	//float degGainP=0.001812;float degGainI=0.000013;float degGainD=0.00;
