@@ -81,29 +81,35 @@ namespace com{
   }
   void sendControll(){
     PSX.updateState(PS);
-    byte buttonBit=0;
-    enum{
+    byte buttonBit1=0,buttonBit2=0;
+    enum buttonBit1{
       UP_BTN,
       DOWN_BTN,
       RIGHT_BTN,
       LEFT_BTN,
-      DEG_UP_BTN,
-      DEG_DOWN_BTN,
-      DEG_ZERO_BTN,
+      TRIANGLE_BTN,
+      CROSS_BTN,
+      CIRCLE_BTN,
       KILL_BTN,
     };
-    buttonBit|=genButtonBit(IS_DOWN_UP(PS),UP_BTN);
-    buttonBit|=genButtonBit(IS_DOWN_DOWN(PS),DOWN_BTN);
-    buttonBit|=genButtonBit(PRESSED_RIGHT(PS),RIGHT_BTN);
-    buttonBit|=genButtonBit(PRESSED_LEFT(PS),LEFT_BTN);
-    buttonBit|=genButtonBit(IS_DOWN_TRIANGLE(PS),DEG_UP_BTN);
-    buttonBit|=genButtonBit(IS_DOWN_CROSS(PS),DEG_DOWN_BTN);
-    buttonBit|=genButtonBit(IS_DOWN_CIRCLE(PS),DEG_ZERO_BTN);
-    buttonBit|=genButtonBit(PRESSED_SQUARE(PS),KILL_BTN);
+    enum buttonBit2{
+      L1_BTN
+    };
+    buttonBit1|=genButtonBit(IS_DOWN_UP(PS),UP_BTN);
+    buttonBit1|=genButtonBit(IS_DOWN_DOWN(PS),DOWN_BTN);
+    buttonBit1|=genButtonBit(PRESSED_RIGHT(PS),RIGHT_BTN);
+    buttonBit1|=genButtonBit(PRESSED_LEFT(PS),LEFT_BTN);
+    buttonBit1|=genButtonBit(PRESSED_TRIANGLE(PS),TRIANGLE_BTN);
+    buttonBit1|=genButtonBit(PRESSED_CROSS(PS),CROSS_BTN);
+    buttonBit1|=genButtonBit(IS_DOWN_CIRCLE(PS),CIRCLE_BTN);
+    buttonBit1|=genButtonBit(PRESSED_SQUARE(PS),KILL_BTN);
+    
+    buttonBit2|=genButtonBit(IS_DOWN_L1(PS),L1_BTN);
     byte sendArray[]={
       ANALOG_RIGHT_Y(PS),
       ANALOG_RIGHT_X(PS),
-      buttonBit,
+      buttonBit1,
+      buttonBit2,
     };
     xbee.send(sendArray,ARRAYLEN(sendArray));
   }

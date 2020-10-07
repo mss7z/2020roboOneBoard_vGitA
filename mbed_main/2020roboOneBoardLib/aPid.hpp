@@ -38,12 +38,12 @@ namespace __aPid_internal__{
 		const T DT;
 		T target;
 		T preOpe;
-		T maxLimit,minLimit;
 		delta<T> dp;
 		delta<T> dd1,dd2;
+		T maxLimit,minLimit;
 	public:
 		aPid(float kPArg,float kIArg,float kDArg,float dtArg,T max,T min);
-		aPid(const pidGain gain,float dtArg);
+		aPid(const pidGain gain,float dtArg,T max,T min);
 		T calc(T val);
 		void set(T val){target=val;}
 		T read(){return target;}
@@ -83,8 +83,9 @@ namespace __aPid_internal__{
 	}
 	
 	template<typename T>
-	aPid<T>::aPid(const pidGain gain,float dtArg):
-	DT(dtArg),dp(DT),dd1(DT),dd2(DT)
+	aPid<T>::aPid(const pidGain gain,float dtArg,T max,T min):
+	DT(dtArg),dp(DT),dd1(DT),dd2(DT),
+	maxLimit(max),minLimit(min)
 	{
 		setGain(gain);
 		reset();

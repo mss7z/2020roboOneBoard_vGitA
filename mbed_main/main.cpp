@@ -1,35 +1,9 @@
 #include "mbed.h"
 
-//#define ENABLE_tb6643kq_md1
-//#define ENABLE_tb6643kq_md2
-#define ENABLE_tb6643kq_md3
-#define ENABLE_tb6643kq_md4
-#define ENABLE_rotaryEncoder1
-#define ENABLE_rotaryEncoder2
-#define ENABLE_imu03a
-#define ENABLE_xbeeCore
-#define VAL_xbeeCore_serialSpeed 38400
 
-#include "2020roboOneBoardLib/lib.hpp"
-
-namespace base{
-	bool isEmergVal=false;
-	bool setEmerg(const bool val){
-		return isEmergVal=val;
-	}
-	bool isEmerg(){
-		return isEmergVal;
-	}
-	bool turnEmerg(){
-		return isEmergVal=!isEmergVal;
-	}
-	
-	//const float TARGET_DEG_INIT=34.628;
-	//const float TARGET_DEG_INIT=32.676;
-	///const float TARGET_DEG_INIT=30.876;
-	const float TARGET_DEG_INIT=35.4;
-}
-
+#include "base.hpp"
+#include "run.hpp"
+/*
 namespace run{
 	class motor{
 		private:
@@ -47,7 +21,7 @@ namespace run{
 	
 	const int CONTROL_CYCLE_TIME=5000;//us
 	const float CONTROL_CYCLE_TIME_SEC=CONTROL_CYCLE_TIME/1000000.0;//sec
-	
+	const float PID_OPERATION_MAX=1.0,PID_OPERATION_MIN=-1.0;
 	//const rob::pidGain gain={0.000102,0.000,0.00001};
 	//const rob::pidGain degGain={0.001912,0.000,0.00003};
 	//const rob::pidGain degGain={0.001812,0.00001,0.0000};
@@ -56,23 +30,26 @@ namespace run{
 	//float degGainP=0.003912;float degGainI=0.03189;float degGainD=0.0000929;//体育間1
 	//float degGainP=0.006811;float degGainI=0.00949;float degGainD=0.0000617;//体育館2
 	//float degGainP=0.003211;float degGainI=0.01038;float degGainD=0.0000721;//体育館2
-	float degGainP=0.00821;float degGainI=0.01748;float degGainD=0.0000721;//体育館2
+	float degGainP=0.00821;float degGainI=0.01748;float degGainD=0.0000721;//0A07
 	
 	
 	//float degGainP=0.001812;float degGainI=0.000013;float degGainD=0.00;
-	rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,1.0,-1.0);
+	rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OPERATION_MAX,PID_OPERATION_MIN);
 	
 	//const rob::pidGain ddegGain={0.00022,0.00001,0.0000};
-	const rob::pidGain ddegGain={0.000,0000,0.0000};
-	rob::aPid<float> ddegPid(ddegGain,CONTROL_CYCLE_TIME_SEC);
+	//const rob::pidGain ddegGain={0.000,0000,0.0000};
+	//rob::aPid<float> ddegPid(ddegGain,CONTROL_CYCLE_TIME_SEC);
 	
 	//calc(control)の時
 	//const rob::pidGain targetDegGain={0.00,0.001,0.00000};
 	//calc(controlSum)の時
-	const rob::pidGain targetDegGain={0.00,0.01,0.0000};
+	//const rob::pidGain targetDegGain={0.00000005,0.00,0.0000003};
 	//calc(control)+1.5
 	//const rob::pidGain targetDegGain={0.0000,0.000001,0.00000};
-	rob::aPid<float> targetDegPid(targetDegGain,CONTROL_CYCLE_TIME_SEC);
+	//float targetDegGainP=0.00000005;float targetDegGainI=0.0;float targetDegGainD=0.0000003;//0A07最初
+	float targetDegGainP=0.0000000;float targetDegGainI=0.0;float targetDegGainD=0.000000;//ZERO
+	//float targetDegGainP=0.00000575;float targetDegGainI=0.00000072;float targetDegGainD=0.00000264;//0A07最初
+	rob::aPid<float> targetDegPid(targetDegGainP,targetDegGainI,targetDegGainD,CONTROL_CYCLE_TIME_SEC,PID_OPERATION_MAX,PID_OPERATION_MIN);
 	
 	rob::a_imu03a &imu=rob::imu03a;
 	rob::aRotaryEncoder &rorycon=rob::rotaryEncoder2;
@@ -80,8 +57,10 @@ namespace run{
 	float realOutputTimeVal=0.0;
 	
 	float userControll=0.0;
-	float controll=0.0;
-	float controllSum=0.0;
+	float control=0.0;
+	float controlSum=0.0;
+	
+	float targetDeg=base::TARGET_DEG_INIT;
 	
 	
 	//内部
@@ -107,28 +86,39 @@ namespace run{
 			return;
 		}
 		
-		/*現在角度算出*/
+		//現在角度算出
 		//calcDegByImu();
 		calcDegByRorycon();
 		
-		/*const float */controll=degPid.calc(deg);//+ddegPid.calc(imu.gyroZ.getDDeg());
-		motorL.output(controll);
-		motorR.output(controll);
+		control=degPid.calc(deg);//+ddegPid.calc(imu.gyroZ.getDDeg());
+		motorL.output(control);
+		motorR.output(control);
 		
-		controllSum+=controll;
-		const float controllSumLimit=100.0;
-		if(controllSum>controllSumLimit){
-			controllSum=controllSumLimit;
-		}
-		if(controllSum<-controllSumLimit){
-			controllSum=-controllSumLimit;
+		if(-0.9<control && control<0.9){
+			controlSum+=control;
+			/*const float controllSumLimit=15.0;
+			if(controllSum>controllSumLimit){
+				controllSum=0.0;
+				targetDeg+=0.05;
+			}else if(controllSum<-controllSumLimit){
+				controllSum=0.0;
+				targetDeg-=0.05;
+			}*
+			
+			const float controlSumLimit=35.0;
+			if(controlSum>controlSumLimit){
+				controlSum=controlSumLimit;
+			}else if(controlSum<-controlSumLimit){
+				controlSum=-controlSumLimit;
+			}
+			targetDeg-=targetDegPid.calc(controlSum);
 		}
 		
 		/*if(imu.gyroZ.getDDeg()<0.00){
 			degPid.set(degPid.read()+0.002);
 		}else{
 			degPid.set(degPid.read()-0.002);
-		}*/
+		}*
 		//degPid.set(targetDegPid.calc(controll)+userControll);
 		//degPid.set(targetDegPid.calc(controllSum)+userControll);
 		//degPid.set(targetDegPid.calc(imu.gyroZ.getDDeg()));
@@ -168,14 +158,14 @@ namespace run{
 	}
 	void resetGyroAndPid(){
 		degPid.reset();
-		ddegPid.reset();
+		//ddegPid.reset();
 		/*imu.resetModule();
 		float total=0.0;
 		for(int i=0;i<20;i++){
 			total+=calcAccelDeg();
 			wait_us(625);
 		}
-		gyroDeg=deg=total/20;*/
+		gyroDeg=deg=total/20;*
 		//imu.gyroZ.startDeg();
 		
 	}
@@ -183,15 +173,19 @@ namespace run{
 		using namespace rob;
 		//pc.printf("realT: %sus ax:%s ay:%s dz:%6s ",rob::flt(realOutputTimeVal*1000000.0),rob::flt(imu.accelX.getG()),rob::flt(imu.accelY.getG()),rob::flt(imu.gyroZ.getDDeg()));
 		//pc.printf("deg:%s gyroDeg:%s accelDeg:%s  tagDeg:%s\n",rob::flt(deg),rob::flt(gyroDeg),rob::flt(accelDeg),rob::flt(degPid.read()));
-		pc.printf("pid P:%s I:%s D:%s  deg:%s\n",flt(degGainP,8),flt(degGainI,8),flt(degGainD,8),flt(deg));
+		pc.printf("pid P:%s I:%s D:%s  deg:%s",flt(degGainP,8),flt(degGainI,8),flt(degGainD,8),flt(deg));
+		pc.printf("  controlSum:%s",flt(controlSum));
+		
+		pc.printf("\n");
 	}
 	
 	void setupRun(){
 		resetGyroAndPid();
 		//setTargetDeg(1.3);
-		ddegPid.set(0.0);
-		degPid.set(base::TARGET_DEG_INIT);
-		/*35.7,28.3,34.9,35.7,34.5,30.7,31.2,29.5,33.2,33.6*/
+		//ddegPid.set(0.0);
+		targetDegPid.set(0.0);
+		//degPid.set(base::TARGET_DEG_INIT);
+		//35.7,28.3,34.9,35.7,34.5,30.7,31.2,29.5,33.2,33.6
 		//gyro.setDeg(-32.73);
 	}
 	void loopRun(){
@@ -201,8 +195,9 @@ namespace run{
 			motorR.stop();
 		}
 		degPid.setGain(degGainP,degGainI,degGainD);
+		degPid.set(targetDeg);
 	}
-}
+}*/
 
 namespace com{
 	rob::aXbeeCom xbee(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9C,0xF1));
@@ -210,8 +205,6 @@ namespace com{
 	uint8_t receiveArray[255]={0};
 	uint16_t receiveSize=0;
 	
-	const float TARGET_DEG_INIT=base::TARGET_DEG_INIT;
-	float targetDeg=TARGET_DEG_INIT;
 	const uint8_t MAX_LCD_STRLEN=100;
 	
 	//内部
@@ -237,16 +230,19 @@ namespace com{
 			for(int i=0;i<nameLen;i++){name[i]=n[i];if(n[i]=='\0'){break;}}
 			pc.printf("%s\n",rob::flt(0.0001,4));
 		}
-		void up(){(*valP)+=step;pc.printf("%s\n",rob::flt(step,7));}
-		void down(){*valP-=step;}
-		void print(){printLcd(1,1,rob::flt(*valP,7));}
-		void printAll(){printLcd(0,1,name);print();}
+		void up(float mult){(*valP)+=step*mult;}
+		void down(float mult){*valP-=step*mult;}
+		void print(){printLcd(1,1,rob::flt(*valP,8));}
+		void printAll(){printLcd(0,1,name);printLcd(1,1,"           ");print();}
 	};
 	ajustFloat ajustFloatArray[]={
-		ajustFloat("t          ",&targetDeg,0.05),
-		ajustFloat("P          ",&run::degGainP,0.0001),
-		ajustFloat("I          ",&run::degGainI,0.0001),
-		ajustFloat("D          ",&run::degGainD,0.0000001),
+		ajustFloat("t",&run::targetDeg,0.05),
+		ajustFloat("P",&run::degGainP,0.0001),
+		ajustFloat("I",&run::degGainI,0.0001),
+		ajustFloat("D",&run::degGainD,0.0000001),
+		ajustFloat("p",&run::targetDegGainP,0.00000001),
+		ajustFloat("i",&run::targetDegGainI,0.00000001),
+		ajustFloat("d",&run::targetDegGainD,0.00000001),
 	};
 	class ajustFloatManager{
 		private:
@@ -260,8 +256,8 @@ namespace com{
 		void next(){if(now==end){now=start;}else{now++;}printAll();}
 		void back(){if(now==start){now=end;}else{now--;}printAll();}
 		void print(){array[now].print();}
-		void up(){array[now].up();}
-		void down(){array[now].down();}
+		void up(float mult=1.0){array[now].up(mult);}
+		void down(float mult=1.0){array[now].down(mult);}
 	};
 	ajustFloatManager ajust(ajustFloatArray,ARRAYLEN(ajustFloatArray));
 	
@@ -272,7 +268,7 @@ namespace com{
 		receiveSize=size;
 		
 		//受信データの処理
-		if(size!=3){
+		if(size!=4){
 			return;
 		}
 		
@@ -281,10 +277,13 @@ namespace com{
 			DOWN_BTN,
 			RIGHT_BTN,
 			LEFT_BTN,
-			DEG_UP_BTN,
-			DEG_DOWN_BTN,
-			DEG_ZERO_BTN,
+			TRIANGLE_BTN,
+			CROSS_BTN,
+			CIRCLE_BTN,
 			KILL_BTN,
+		};
+		enum{
+			L1_BTN,
 		};
 		
 		if(genBoolFromButtonBit(array[2],KILL_BTN)){
@@ -313,16 +312,17 @@ namespace com{
 		
 		run::setTargetDegAdd(byte2floatMotorOutput(array[0])*0.5);
 		
+		const float upDownMult=genBoolFromButtonBit(array[3],L1_BTN)?3.0:1.0;
 		if(genBoolFromButtonBit(array[2],UP_BTN)){
-			ajust.up();
+			ajust.up(upDownMult);
 		}
 		if(genBoolFromButtonBit(array[2],DOWN_BTN)){
-			ajust.down();
+			ajust.down(upDownMult);
 		}
-		if(genBoolFromButtonBit(array[2],RIGHT_BTN)){
+		if(genBoolFromButtonBit(array[2],TRIANGLE_BTN)){
 			ajust.next();
 		}
-		if(genBoolFromButtonBit(array[2],LEFT_BTN)){
+		if(genBoolFromButtonBit(array[2],CROSS_BTN)){
 			ajust.back();
 		}
 		ajust.print();
@@ -333,11 +333,12 @@ namespace com{
 		if(genBoolFromButtonBit(array[2],DEG_DOWN_BTN)){
 			targetDeg-=0.040;
 		}*/
-		if(genBoolFromButtonBit(array[2],DEG_ZERO_BTN)){
-			targetDeg=TARGET_DEG_INIT;
+		if(genBoolFromButtonBit(array[2],CIRCLE_BTN)){
+			//run::targetDeg=base::TARGET_DEG_INIT;
+			run::controlSum=0.0;
 			//run::resetGyroAndPid();
 		}
-		run::setTargetDeg(targetDeg);
+		//run::setTargetDeg(targetDeg);
 		//printLcd(0,1,rob::flt(targetDeg));
 	}
 	float byte2floatMotorOutput(const uint8_t source){
@@ -366,7 +367,7 @@ namespace com{
 		if(printLcdTime){
 			//printLcd(0,0,rob::flt(run::deg-run::degPid.read()));
 			printLcd(0,0,"o");
-			printLcd(1,0,rob::flt(run::controll));
+			printLcd(1,0,rob::flt(run::control));
 		}
 	}
 	void printReceive(){
@@ -409,6 +410,7 @@ int main(){
 	while(true){
 		if(printInterval){
 			//com::printReceive();
+			pc.printf("enc1:%6d ",rob::rotaryEncoder1.read());
 			run::printDeg();
 		}
 		run::loopRun();
