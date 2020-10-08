@@ -310,7 +310,7 @@ namespace com{
 		const float rotation=byte2floatMotorOutput(array[1])*0.2;
 		run::setMove(rotation,-rotation);
 		
-		run::setTargetDegAdd(byte2floatMotorOutput(array[0])*0.5);
+		run::setTargetDisplacementAdd(byte2floatMotorOutput(array[0])*2.5);
 		
 		const float upDownMult=genBoolFromButtonBit(array[3],L1_BTN)?3.0:1.0;
 		if(genBoolFromButtonBit(array[2],UP_BTN)){

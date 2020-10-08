@@ -7,6 +7,7 @@ motor motorR(rob::tb6643kq_md4,1.0);
 
 rob::a_imu03a &imu=rob::imu03a;
 rob::aRotaryEncoder &rorycon=rob::rotaryEncoder2;
+rob::aRotaryEncoder &displacementEnc=rob::rotaryEncoder1;
 
 //const rob::pidGain gain={0.000102,0.000,0.00001};
 //const rob::pidGain degGain={0.001912,0.000,0.00003};
@@ -16,7 +17,10 @@ rob::aRotaryEncoder &rorycon=rob::rotaryEncoder2;
 //float degGainP=0.003912;float degGainI=0.03189;float degGainD=0.0000929;//体育間1
 //float degGainP=0.006811;float degGainI=0.00949;float degGainD=0.0000617;//体育館2
 //float degGainP=0.003211;float degGainI=0.01038;float degGainD=0.0000721;//体育館2
-float degGainP=0.00821;float degGainI=0.01748;float degGainD=0.0000721;//0A07
+//float degGainP=0.00821;float degGainI=0.01748;float degGainD=0.0000721;//0A07
+//float degGainP=0.00781;float degGainI=0.01538;float degGainD=0.00006769;//0A08
+//float degGainP=0.00661;float degGainI=0.03087;float degGainD=0.00016879;//0A08
+float degGainP=0.00621;float degGainI=0.03327;float degGainD=0.00008058;//0A08 good
 
 
 //float degGainP=0.001812;float degGainI=0.000013;float degGainD=0.00;
@@ -33,9 +37,11 @@ rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OP
 //calc(control)+1.5
 //const rob::pidGain targetDegGain={0.0000,0.000001,0.00000};
 //float targetDegGainP=0.00000005;float targetDegGainI=0.0;float targetDegGainD=0.0000003;//0A07最初
-float targetDegGainP=0.0000000;float targetDegGainI=0.0;float targetDegGainD=0.000000;//ZERO
+//float targetDegGainP=0.00000741;float targetDegGainI=0.0;float targetDegGainD=0.000000;//ZERO
+float targetDegGainP=0.00000934;float targetDegGainI=0.00000016;float targetDegGainD=0.00000071;//good
+
 //float targetDegGainP=0.00000575;float targetDegGainI=0.00000072;float targetDegGainD=0.00000264;//0A07最初
-rob::aPid<float> targetDegPid(targetDegGainP,targetDegGainI,targetDegGainD,CONTROL_CYCLE_TIME_SEC,PID_OPERATION_MAX,PID_OPERATION_MIN);
+rob::aPid<float> targetDegPid(targetDegGainP,targetDegGainI,targetDegGainD,CONTROL_CYCLE_TIME_SEC,10,-10);
 
 float accelDeg=0.0,gyroDeg=0.0,deg=0.0;
 float realOutputTimeVal=0.0;
@@ -45,6 +51,10 @@ float control=0.0;
 float controlSum=0.0;
 
 float targetDeg=base::TARGET_DEG_INIT;
+float targetDegAdd=0.0;
+
+float displacement=0.0;
+float displacementAdd=0.0;
 
 
 //内部
@@ -52,6 +62,7 @@ void pidAndOutput();
 float calcAccelDeg();
 void calcDegByImu();
 void calcDegByRorycon();
+void calcDisplacement();
 
 
 void pidAndOutput(){
@@ -67,11 +78,13 @@ void pidAndOutput(){
 	/*現在角度算出*/
 	//calcDegByImu();
 	calcDegByRorycon();
+	calcDisplacement();
 	
 	/*const float */control=degPid.calc(deg);//+ddegPid.calc(imu.gyroZ.getDDeg());
 	motorL.output(control);
 	motorR.output(control);
 	
+	/*
 	if(-0.9<control && control<0.9){
 		controlSum+=control;
 		/*const float controllSumLimit=15.0;
@@ -81,7 +94,7 @@ void pidAndOutput(){
 		}else if(controllSum<-controllSumLimit){
 			controllSum=0.0;
 			targetDeg-=0.05;
-		}*/
+		}*
 		
 		const float controlSumLimit=35.0;
 		if(controlSum>controlSumLimit){
@@ -90,7 +103,8 @@ void pidAndOutput(){
 			controlSum=-controlSumLimit;
 		}
 		targetDeg-=targetDegPid.calc(controlSum);
-	}
+	}*/
+	targetDegAdd=-targetDegPid.calc(displacement);
 	
 	/*if(imu.gyroZ.getDDeg()<0.00){
 		degPid.set(degPid.read()+0.002);
@@ -121,6 +135,10 @@ void calcDegByRorycon(){
 	}
 	deg=-(360.0*rorycon.read())/pulsePerRevolution;
 }
+void calcDisplacement(){
+	const int pulsePerRevolution=125*4;
+	displacement=(80.0*3.1415926535*displacementEnc.read())/pulsePerRevolution;
+}
 
 void setMove(const float valL,const float valR){
 	motorL.setBase(valL);
@@ -131,8 +149,9 @@ void setTargetDeg(const float deg){
 	degPid.set(degAdd+deg);
 	//userControll=deg;
 }
-void setTargetDegAdd(const float deg){
-	degAdd=deg;
+void setTargetDisplacementAdd(const float deg){
+	displacementAdd+=deg;
+	targetDegPid.set(displacementAdd);
 }
 void resetGyroAndPid(){
 	degPid.reset();
@@ -151,8 +170,9 @@ void printDeg(){
 	using namespace rob;
 	//pc.printf("realT: %sus ax:%s ay:%s dz:%6s ",rob::flt(realOutputTimeVal*1000000.0),rob::flt(imu.accelX.getG()),rob::flt(imu.accelY.getG()),rob::flt(imu.gyroZ.getDDeg()));
 	//pc.printf("deg:%s gyroDeg:%s accelDeg:%s  tagDeg:%s\n",rob::flt(deg),rob::flt(gyroDeg),rob::flt(accelDeg),rob::flt(degPid.read()));
-	pc.printf("pid P:%s I:%s D:%s  deg:%s",flt(degGainP,8),flt(degGainI,8),flt(degGainD,8),flt(deg));
-	pc.printf("  controlSum:%s",flt(controlSum));
+	//pc.printf("pid P:%s I:%s D:%s  deg:%s",flt(degGainP,8),flt(degGainI,8),flt(degGainD,8),flt(deg));
+	pc.printf("  targetDeg:%8s",flt(targetDegPid.read()));
+	pc.printf("  displacement:%8s t:%7s",flt(displacement),flt(degPid.read()));
 	
 	pc.printf("\n");
 }
@@ -173,7 +193,8 @@ void loopRun(){
 		motorR.stop();
 	}
 	degPid.setGain(degGainP,degGainI,degGainD);
-	degPid.set(targetDeg);
+	degPid.set(targetDeg+targetDegAdd);
+	targetDegPid.setGain(targetDegGainP,targetDegGainI,targetDegGainD);
 }
 
 }//namespace run

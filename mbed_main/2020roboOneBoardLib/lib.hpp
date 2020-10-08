@@ -9,6 +9,8 @@
 #include "aXbee.hpp"
 #include "aPid.hpp"
 
+#include "../2020roboOneBoardLib_setting.hpp"
+
 namespace rob{
 
 /*
