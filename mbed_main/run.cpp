@@ -198,7 +198,7 @@ void printDeg(){
 	//pc.printf("deg:%s gyroDeg:%s accelDeg:%s  tagDeg:%s\n",rob::flt(deg),rob::flt(gyroDeg),rob::flt(accelDeg),rob::flt(degPid.read()));
 	//pc.printf("pid P:%s I:%s D:%s  deg:%s",flt(degGainP,8),flt(degGainI,8),flt(degGainD,8),flt(deg));
 	pc.printf("  targetDeg:%8s",flt(targetDegPid.read()));
-	pc.printf("  displacement:%8s t:%7s deg:%7s",flt(displacement),flt(targetDeg+targetDegAdd),flt(deg));
+	pc.printf("  displacement:%8s targetDeg:%7s +Add:%7s deg:%7s",flt(displacement),flt(targetDeg),flt(targetDeg+targetDegAdd),flt(deg));
 	
 	pc.printf("\n");
 }
