@@ -5,6 +5,7 @@
 
 namespace run{
 
+
 class motor{
 	private:
 	rob::aTB6643KQ &mtInst;

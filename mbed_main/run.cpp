@@ -1,7 +1,13 @@
 #include "run.hpp"
 
+namespace base{
+	bool isEmergVal=false;
+}
+
 namespace run{
-	
+
+
+
 motor motorL(rob::tb6643kq_md3,-1.0);
 motor motorR(rob::tb6643kq_md4,1.0);
 
@@ -38,7 +44,9 @@ rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OP
 //const rob::pidGain targetDegGain={0.0000,0.000001,0.00000};
 //float targetDegGainP=0.00000005;float targetDegGainI=0.0;float targetDegGainD=0.0000003;//0A07最初
 //float targetDegGainP=0.00000741;float targetDegGainI=0.0;float targetDegGainD=0.000000;//ZERO
+//float targetDegGainP=0.00000934;float targetDegGainI=0.00000016;float targetDegGainD=0.00000071;//good
 float targetDegGainP=0.00000934;float targetDegGainI=0.00000016;float targetDegGainD=0.00000071;//good
+
 
 //float targetDegGainP=0.00000575;float targetDegGainI=0.00000072;float targetDegGainD=0.00000264;//0A07最初
 rob::aPid<float> targetDegPid(targetDegGainP,targetDegGainI,targetDegGainD,CONTROL_CYCLE_TIME_SEC,10,-10);
@@ -67,6 +75,10 @@ void calcDisplacement();
 
 void pidAndOutput(){
 	static rob::regularC_us outputTime(CONTROL_CYCLE_TIME);
+	static rob::regularC_us calcDegTime(1000);
+	if(calcDegTime){
+		calcDegByRorycon();
+	}
 	
 	if(!outputTime){
 		return;
@@ -105,6 +117,7 @@ void pidAndOutput(){
 		targetDeg-=targetDegPid.calc(controlSum);
 	}*/
 	targetDegAdd=-targetDegPid.calc(displacement);
+	targetDeg=targetDeg*0.999+(targetDeg+targetDegAdd)*0.001;
 	
 	/*if(imu.gyroZ.getDDeg()<0.00){
 		degPid.set(degPid.read()+0.002);
@@ -130,10 +143,23 @@ void calcDegByImu(){
 }
 void calcDegByRorycon(){
 	const int pulsePerRevolution=2048*4;
+	const int VALS_LEN=10;
+	static int vals[VALS_LEN]={0};
+	static int valsIndex=0;
 	if(rorycon.read()>0){
 		rorycon.set(0);
 	}
-	deg=-(360.0*rorycon.read())/pulsePerRevolution;
+	vals[valsIndex]=rorycon.read();
+	valsIndex++;
+	if(valsIndex>=VALS_LEN){
+		valsIndex=0;
+	}
+	int sum=0;
+	for(int i=0;i<VALS_LEN;i++){
+		sum+=vals[i];
+	}
+	
+	deg=-(360.0*((float)sum/VALS_LEN))/pulsePerRevolution;
 }
 void calcDisplacement(){
 	const int pulsePerRevolution=125*4;
@@ -172,7 +198,7 @@ void printDeg(){
 	//pc.printf("deg:%s gyroDeg:%s accelDeg:%s  tagDeg:%s\n",rob::flt(deg),rob::flt(gyroDeg),rob::flt(accelDeg),rob::flt(degPid.read()));
 	//pc.printf("pid P:%s I:%s D:%s  deg:%s",flt(degGainP,8),flt(degGainI,8),flt(degGainD,8),flt(deg));
 	pc.printf("  targetDeg:%8s",flt(targetDegPid.read()));
-	pc.printf("  displacement:%8s t:%7s",flt(displacement),flt(degPid.read()));
+	pc.printf("  displacement:%8s t:%7s deg:%7s",flt(displacement),flt(targetDeg+targetDegAdd),flt(deg));
 	
 	pc.printf("\n");
 }

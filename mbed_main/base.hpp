@@ -15,7 +15,7 @@ ENABLE_imu03a;
 ENABLE_xbeeCore;*/
 
 namespace base{
-	static bool isEmergVal=false;
+	extern bool isEmergVal;
 	
 	inline bool setEmerg(const bool val){
 		return isEmergVal=val;
