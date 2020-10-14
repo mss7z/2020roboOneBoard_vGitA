@@ -233,7 +233,7 @@ namespace com{
 		void up(float mult){(*valP)+=step*mult;}
 		void down(float mult){*valP-=step*mult;}
 		void print(){printLcd(1,1,rob::flt(*valP,8));}
-		void printAll(){printLcd(0,1,name);printLcd(1,1,"           ");print();}
+		void printAll(){printLcd(0,1,name);printLcd(1,1,"            ");print();}
 	};
 	ajustFloat ajustFloatArray[]={
 		ajustFloat("t",&run::targetDeg,0.05),
@@ -243,6 +243,7 @@ namespace com{
 		ajustFloat("p",&run::targetDegGainP,0.00000001),
 		ajustFloat("i",&run::targetDegGainI,0.00000001),
 		ajustFloat("d",&run::targetDegGainD,0.00000001),
+		ajustFloat("m",&run::targetDegBaseChangeMult,0.001),
 	};
 	class ajustFloatManager{
 		private:
@@ -307,7 +308,7 @@ namespace com{
 		run::setMove(valL,valR);
 		*/
 		
-		const float rotation=byte2floatMotorOutput(array[1])*0.2;
+		const float rotation=byte2floatMotorOutput(array[1])*0.45;
 		const float base=0.0*0.3;
 		run::setMove(base+rotation,base-rotation);
 		

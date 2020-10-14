@@ -32,6 +32,8 @@ extern rob::aRotaryEncoder &rorycon;
 extern float control,controlSum;
 extern float targetDeg;
 
+extern float targetDegBaseChangeMult;
+
 
 //外部
 void setMove(const float valL,const float valR);

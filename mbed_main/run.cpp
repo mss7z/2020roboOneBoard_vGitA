@@ -26,8 +26,10 @@ rob::aRotaryEncoder &displacementEnc=rob::rotaryEncoder1;
 //float degGainP=0.00821;float degGainI=0.01748;float degGainD=0.0000721;//0A07
 //float degGainP=0.00781;float degGainI=0.01538;float degGainD=0.00006769;//0A08
 //float degGainP=0.00661;float degGainI=0.03087;float degGainD=0.00016879;//0A08
-float degGainP=0.00621;float degGainI=0.03327;float degGainD=0.00008058;//0A08 good
-
+//float degGainP=0.00621;float degGainI=0.03327;float degGainD=0.00008058;//0A08 good
+//float degGainP=0.00571;float degGainI=0.03327;float degGainD=0.00007857;//0A10
+//float degGainP=0.00711;float degGainI=0.01707;float degGainD=0.00007857;//0A10
+float degGainP=0.00711;float degGainI=0.01707;float degGainD=0.00009437;//0A13
 
 //float degGainP=0.001812;float degGainI=0.000013;float degGainD=0.00;
 rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OPERATION_MAX,PID_OPERATION_MIN);
@@ -45,7 +47,9 @@ rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OP
 //float targetDegGainP=0.00000005;float targetDegGainI=0.0;float targetDegGainD=0.0000003;//0A07最初
 //float targetDegGainP=0.00000741;float targetDegGainI=0.0;float targetDegGainD=0.000000;//ZERO
 //float targetDegGainP=0.00000934;float targetDegGainI=0.00000016;float targetDegGainD=0.00000071;//good
-float targetDegGainP=0.00000934;float targetDegGainI=0.00000016;float targetDegGainD=0.00000071;//good
+//float targetDegGainP=0.00000934;float targetDegGainI=0.00000000;float targetDegGainD=0.00000071;//good
+//float targetDegGainP=0.00000744;float targetDegGainI=0.00000045;float targetDegGainD=0.00000245;//good
+float targetDegGainP=0.00001020;float targetDegGainI=0.00000409;float targetDegGainD=0.00000061;//good
 
 
 //float targetDegGainP=0.00000575;float targetDegGainI=0.00000072;float targetDegGainD=0.00000264;//0A07最初
@@ -61,11 +65,16 @@ float controlSum=0.0;
 float targetDeg=base::TARGET_DEG_INIT;
 float targetDegAdd=0.0;
 
+float targetDegBaseChangeMult=0.999;
+
 float displacement=0.0;
 float displacementAdd=0.0;
 
 
+float displacementLast=0.0;
+
 //内部
+float getDegDiff();
 void pidAndOutput();
 float calcAccelDeg();
 void calcDegByImu();
@@ -73,11 +82,19 @@ void calcDegByRorycon();
 void calcDisplacement();
 
 
+float getDegDiff(){
+	return degPid.read()-deg;
+}
 void pidAndOutput(){
 	static rob::regularC_us outputTime(CONTROL_CYCLE_TIME);
-	static rob::regularC_us calcDegTime(1000);
+	static rob::regularC_us calcDegTime(100);
+	static rob::regularC_ms calcTargetDegTime(100);
 	if(calcDegTime){
 		calcDegByRorycon();
+	}
+	if(calcTargetDegTime){
+		targetDegAdd=-targetDegPid.calc(displacement);
+		targetDeg=targetDeg*targetDegBaseChangeMult+(targetDeg+targetDegAdd)*(1.0-targetDegBaseChangeMult);
 	}
 	
 	if(!outputTime){
@@ -93,9 +110,15 @@ void pidAndOutput(){
 	calcDisplacement();
 	
 	/*const float */control=degPid.calc(deg);//+ddegPid.calc(imu.gyroZ.getDDeg());
-	motorL.output(control);
-	motorR.output(control);
 	
+	const float diffAbs=abs(getDegDiff());
+	if(diffAbs<0.0){
+		motorL.output(0.0);
+		motorR.output(0.0);
+	}else{
+		motorL.output(control);
+		motorR.output(control);
+	}
 	/*
 	if(-0.9<control && control<0.9){
 		controlSum+=control;
@@ -116,8 +139,17 @@ void pidAndOutput(){
 		}
 		targetDeg-=targetDegPid.calc(controlSum);
 	}*/
-	targetDegAdd=-targetDegPid.calc(displacement);
-	targetDeg=targetDeg*0.999+(targetDeg+targetDegAdd)*0.001;
+	//targetDegAdd=-targetDegPid.calc(displacement);
+	//targetDeg=targetDeg*targetDegBaseChangeMult+(targetDeg+targetDegAdd)*(1.0-targetDegBaseChangeMult);
+	
+	/*if(abs(displacement-displacementLast)>30.0){
+		if(displacement>displacementLast){
+			targetDeg+=0.05;
+		}else{
+			targetDeg-=0.05;
+		}
+		displacementLast=displacement;
+	}*/
 	
 	/*if(imu.gyroZ.getDDeg()<0.00){
 		degPid.set(degPid.read()+0.002);
@@ -143,7 +175,7 @@ void calcDegByImu(){
 }
 void calcDegByRorycon(){
 	const int pulsePerRevolution=2048*4;
-	const int VALS_LEN=10;
+	const int VALS_LEN=50;
 	static int vals[VALS_LEN]={0};
 	static int valsIndex=0;
 	if(rorycon.read()>0){
