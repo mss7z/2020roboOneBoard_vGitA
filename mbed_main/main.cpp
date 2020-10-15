@@ -308,7 +308,7 @@ namespace com{
 		run::setMove(valL,valR);
 		*/
 		
-		const float rotation=byte2floatMotorOutput(array[1])*0.45;
+		const float rotation=byte2floatMotorOutput(array[1])*0.3;
 		const float base=0.0*0.3;
 		run::setMove(base+rotation,base-rotation);
 		
