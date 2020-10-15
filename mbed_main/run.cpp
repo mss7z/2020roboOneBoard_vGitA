@@ -1,8 +1,5 @@
 #include "run.hpp"
 
-namespace base{
-	bool isEmergVal=false;
-}
 
 namespace run{
 
@@ -29,7 +26,10 @@ rob::aRotaryEncoder &displacementEnc=rob::rotaryEncoder1;
 //float degGainP=0.00621;float degGainI=0.03327;float degGainD=0.00008058;//0A08 good
 //float degGainP=0.00571;float degGainI=0.03327;float degGainD=0.00007857;//0A10
 //float degGainP=0.00711;float degGainI=0.01707;float degGainD=0.00007857;//0A10
-float degGainP=0.00711;float degGainI=0.01707;float degGainD=0.00009437;//0A13
+//float degGainP=0.00711;float degGainI=0.01707;float degGainD=0.00009437;//0A13
+//float degGainP=0.00561;float degGainI=0.01257;float degGainD=0.00006416;//0A13
+float degGainP=0.01121;float degGainI=0.02057;float degGainD=0.00005516;//0A13
+
 
 //float degGainP=0.001812;float degGainI=0.000013;float degGainD=0.00;
 rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OPERATION_MAX,PID_OPERATION_MIN);
@@ -49,8 +49,8 @@ rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OP
 //float targetDegGainP=0.00000934;float targetDegGainI=0.00000016;float targetDegGainD=0.00000071;//good
 //float targetDegGainP=0.00000934;float targetDegGainI=0.00000000;float targetDegGainD=0.00000071;//good
 //float targetDegGainP=0.00000744;float targetDegGainI=0.00000045;float targetDegGainD=0.00000245;//good
-float targetDegGainP=0.00001020;float targetDegGainI=0.00000409;float targetDegGainD=0.00000061;//good
-
+//float targetDegGainP=0.00001020;float targetDegGainI=0.00000409;float targetDegGainD=0.00000061;//good
+float targetDegGainP=0.00001005;float targetDegGainI=0.00000421;float targetDegGainD=0.00000041;//good
 
 //float targetDegGainP=0.00000575;float targetDegGainI=0.00000072;float targetDegGainD=0.00000264;//0A07最初
 rob::aPid<float> targetDegPid(targetDegGainP,targetDegGainI,targetDegGainD,CONTROL_CYCLE_TIME_SEC,10,-10);
@@ -233,6 +233,9 @@ void printDeg(){
 	pc.printf("  displacement:%8s targetDeg:%7s +Add:%7s deg:%7s",flt(displacement),flt(targetDeg),flt(targetDeg+targetDegAdd),flt(deg));
 	
 	pc.printf("\n");
+}
+float getDeg(){
+	return deg;
 }
 
 void setupRun(){

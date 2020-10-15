@@ -31,6 +31,8 @@ namespace base{
 	//const float TARGET_DEG_INIT=32.676;
 	///const float TARGET_DEG_INIT=30.876;
 	static const float TARGET_DEG_INIT=35.4;
+	
+	
 }
 
 #endif

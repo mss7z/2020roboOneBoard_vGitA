@@ -308,11 +308,11 @@ namespace com{
 		run::setMove(valL,valR);
 		*/
 		
-		const float rotation=byte2floatMotorOutput(array[1])*0.3;
+		const float rotation=byte2floatMotorOutput(array[1])*0.35;
 		const float base=0.0*0.3;
 		run::setMove(base+rotation,base-rotation);
 		
-		run::setTargetDisplacementAdd(byte2floatMotorOutput(array[0])*5.0);
+		run::setTargetDisplacementAdd(byte2floatMotorOutput(array[0])*4.0);
 		
 		const float upDownMult=genBoolFromButtonBit(array[3],L1_BTN)?3.0:1.0;
 		if(genBoolFromButtonBit(array[2],UP_BTN)){
@@ -401,6 +401,46 @@ namespace com{
 	
 }
 
+namespace checker{
+	void printToLcd(){
+		static int printRCont=0;
+		if(base::isEmerg()){
+			com::printLcd(15,0,"E");
+		}else{
+			com::printLcd(15,0," ");
+		}
+		if(printRCont==-1){
+			if(printRCont<10){
+				com::printLcd(14,0,"R");
+				printRCont++;
+			}else{
+				com::printLcd(14,0," ");
+				printRCont=-1;
+			}
+		}
+			
+	}
+	
+	void loopChecker(){
+		static float maxDeg=0.0;
+		static bool noChecked=true;
+		static rob::regularC_ms controlTime(500);
+		
+		if(!controlTime){
+			return;
+		}
+		
+		if(maxDeg>50.0 && noChecked){
+			noChecked=false;
+			base::setEmerg(false);
+		}
+		if(maxDeg<run::getDeg()){
+			maxDeg=run::getDeg();
+		}
+		printToLcd();
+	}
+}
+
 int main(){
 	rob::regularC_ms printInterval(100);
 	com::setupCom();
@@ -417,6 +457,7 @@ int main(){
 		}
 		run::loopRun();
 		com::loopCom();
+		checker::loopChecker();
 	}
 	
     return 0;

@@ -42,6 +42,7 @@ void setTargetDisplacementAdd(const float val);
 void resetGyroAndPid();
 void printDeg();
 void isEmergency(bool);
+float getDeg();
 
 void setupRun();
 void loopRun();

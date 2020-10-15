@@ -13,7 +13,7 @@ class aTB6643KQ{
 	aTB6643KQ(PinName ap,PinName bp):
 	a(ap),b(bp)
 	{
-		freq(6000);
+		freq(23000);
 	}
 	
 	float set(float);
