@@ -28,7 +28,11 @@ rob::aRotaryEncoder &displacementEnc=rob::rotaryEncoder1;
 //float degGainP=0.00711;float degGainI=0.01707;float degGainD=0.00007857;//0A10
 //float degGainP=0.00711;float degGainI=0.01707;float degGainD=0.00009437;//0A13
 //float degGainP=0.00561;float degGainI=0.01257;float degGainD=0.00006416;//0A13
-float degGainP=0.01121;float degGainI=0.02057;float degGainD=0.00005516;//0A13
+//float degGainP=0.01121;float degGainI=0.02057;float degGainD=0.00005516;//0A13
+//float degGainP=0.00971;float degGainI=0.01727;float degGainD=0.00005345;//0A16 100us 50times
+float degGainP=0.00471;float degGainI=0.01077;float degGainD=0.00005345;//0A16 300us 50times
+
+
 
 
 //float degGainP=0.001812;float degGainI=0.000013;float degGainD=0.00;
@@ -51,6 +55,7 @@ rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OP
 //float targetDegGainP=0.00000744;float targetDegGainI=0.00000045;float targetDegGainD=0.00000245;//good
 //float targetDegGainP=0.00001020;float targetDegGainI=0.00000409;float targetDegGainD=0.00000061;//good
 float targetDegGainP=0.00001005;float targetDegGainI=0.00000421;float targetDegGainD=0.00000041;//good
+//float targetDegGainP=0.00003648;float targetDegGainI=0.00000877;float targetDegGainD=0.00000041;//good
 
 //float targetDegGainP=0.00000575;float targetDegGainI=0.00000072;float targetDegGainD=0.00000264;//0A07最初
 rob::aPid<float> targetDegPid(targetDegGainP,targetDegGainI,targetDegGainD,CONTROL_CYCLE_TIME_SEC,10,-10);
@@ -64,6 +69,7 @@ float controlSum=0.0;
 
 float targetDeg=base::TARGET_DEG_INIT;
 float targetDegAdd=0.0;
+float targetDegUser=0.0;
 
 float targetDegBaseChangeMult=0.999;
 
@@ -87,10 +93,16 @@ float getDegDiff(){
 }
 void pidAndOutput(){
 	static rob::regularC_us outputTime(CONTROL_CYCLE_TIME);
-	static rob::regularC_us calcDegTime(100);
+	static rob::regularC_us calcDegTime(300);
 	static rob::regularC_ms calcTargetDegTime(100);
+	
+	
+	
 	if(calcDegTime){
 		calcDegByRorycon();
+	}
+	if(base::isEmerg()){
+		return;
 	}
 	if(calcTargetDegTime){
 		targetDegAdd=-targetDegPid.calc(displacement);
@@ -100,10 +112,6 @@ void pidAndOutput(){
 	if(!outputTime){
 		return;
 	}
-	if(base::isEmerg()){
-		return;
-	}
-	
 	/*現在角度算出*/
 	//calcDegByImu();
 	calcDegByRorycon();
@@ -202,34 +210,27 @@ void setMove(const float valL,const float valR){
 	motorL.setBase(valL);
 	motorR.setBase(valR);
 }
-float degAdd=0.0;
-void setTargetDeg(const float deg){
-	degPid.set(degAdd+deg);
-	//userControll=deg;
-}
-void setTargetDisplacementAdd(const float deg){
-	displacementAdd+=deg;
+
+void setUserAdd(const float add){//setUSERRRRRRRRRRR
+	
+	displacementAdd+=add*4.0;
 	targetDegPid.set(displacementAdd);
+	//targetDegUser=-add*0.2;
+	
+	/*if(-0.005<add && add<0.005){
+		return;
+	}else{
+		targetDegUser=-add*0.5;
+		targetDegPid.set(displacement);
+	}*/
 }
 void resetGyroAndPid(){
 	degPid.reset();
-	//ddegPid.reset();
-	/*imu.resetModule();
-	float total=0.0;
-	for(int i=0;i<20;i++){
-		total+=calcAccelDeg();
-		wait_us(625);
-	}
-	gyroDeg=deg=total/20;*/
-	//imu.gyroZ.startDeg();
 	
 }
 void printDeg(){
 	using namespace rob;
-	//pc.printf("realT: %sus ax:%s ay:%s dz:%6s ",rob::flt(realOutputTimeVal*1000000.0),rob::flt(imu.accelX.getG()),rob::flt(imu.accelY.getG()),rob::flt(imu.gyroZ.getDDeg()));
-	//pc.printf("deg:%s gyroDeg:%s accelDeg:%s  tagDeg:%s\n",rob::flt(deg),rob::flt(gyroDeg),rob::flt(accelDeg),rob::flt(degPid.read()));
-	//pc.printf("pid P:%s I:%s D:%s  deg:%s",flt(degGainP,8),flt(degGainI,8),flt(degGainD,8),flt(deg));
-	pc.printf("  targetDeg:%8s",flt(targetDegPid.read()));
+	pc.printf("  TDPidRead:%8s",flt(targetDegPid.read()));
 	pc.printf("  displacement:%8s targetDeg:%7s +Add:%7s deg:%7s",flt(displacement),flt(targetDeg),flt(targetDeg+targetDegAdd),flt(deg));
 	
 	pc.printf("\n");
@@ -240,12 +241,7 @@ float getDeg(){
 
 void setupRun(){
 	resetGyroAndPid();
-	//setTargetDeg(1.3);
-	//ddegPid.set(0.0);
 	targetDegPid.set(0.0);
-	//degPid.set(base::TARGET_DEG_INIT);
-	/*35.7,28.3,34.9,35.7,34.5,30.7,31.2,29.5,33.2,33.6*/
-	//gyro.setDeg(-32.73);
 }
 void loopRun(){
 	pidAndOutput();
@@ -254,7 +250,7 @@ void loopRun(){
 		motorR.stop();
 	}
 	degPid.setGain(degGainP,degGainI,degGainD);
-	degPid.set(targetDeg+targetDegAdd);
+	degPid.set(targetDeg+targetDegAdd+targetDegUser);
 	targetDegPid.setGain(targetDegGainP,targetDegGainI,targetDegGainD);
 }
 

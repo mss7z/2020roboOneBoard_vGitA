@@ -37,8 +37,7 @@ extern float targetDegBaseChangeMult;
 
 //外部
 void setMove(const float valL,const float valR);
-void setTargetDeg(const float deg);
-void setTargetDisplacementAdd(const float val);
+void setUserAdd(const float val);
 void resetGyroAndPid();
 void printDeg();
 void isEmergency(bool);

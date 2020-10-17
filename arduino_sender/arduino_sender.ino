@@ -121,10 +121,26 @@ namespace com{
     lcd.print((char*)(array+2));
   }
 }
+
+void setupPS2(){
+  PSX.mode(PS,MODE_ANALOG,MODE_LOCK);
+}
+
+void checkPS2(){
+  static regularC checkTime(440);
+  static const int ANALOG_ERR=255;
+  if(checkTime){
+    PSX.updateState(PS);
+    
+    if(ANALOG_RIGHT_Y(PS)==ANALOG_ERR && ANALOG_RIGHT_X(PS)==ANALOG_ERR){
+      setupPS2();
+    }
+  }
+}
 void setup() {
   //dcom
   dcom.begin(9600);
-  PSX.mode(PS,MODE_ANALOG,MODE_LOCK);
+  setupPS2();
   lcd.begin(16,2);
   //Serial.begin(38400);
   //Serial.print("hello");
@@ -133,5 +149,5 @@ void setup() {
 
 void loop() {
   com::loopCom();
-  
+  checkPS2();
 }
