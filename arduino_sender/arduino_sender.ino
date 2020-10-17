@@ -142,6 +142,7 @@ void setup() {
   dcom.begin(9600);
   setupPS2();
   lcd.begin(16,2);
+  lcd.print("2020ROB!");
   //Serial.begin(38400);
   //Serial.print("hello");
   com::setupCom();

@@ -30,7 +30,8 @@ rob::aRotaryEncoder &displacementEnc=rob::rotaryEncoder1;
 //float degGainP=0.00561;float degGainI=0.01257;float degGainD=0.00006416;//0A13
 //float degGainP=0.01121;float degGainI=0.02057;float degGainD=0.00005516;//0A13
 //float degGainP=0.00971;float degGainI=0.01727;float degGainD=0.00005345;//0A16 100us 50times
-float degGainP=0.00471;float degGainI=0.01077;float degGainD=0.00005345;//0A16 300us 50times
+//float degGainP=0.00471;float degGainI=0.01077;float degGainD=0.00005345;//0A16 300us 50times
+float degGainP=0.00391;float degGainI=0.01077;float degGainD=0.00004225;//0A17 testrun 1719 300us 50times
 
 
 
@@ -252,6 +253,7 @@ void loopRun(){
 	degPid.setGain(degGainP,degGainI,degGainD);
 	degPid.set(targetDeg+targetDegAdd+targetDegUser);
 	targetDegPid.setGain(targetDegGainP,targetDegGainI,targetDegGainD);
+	
 }
 
 }//namespace run
