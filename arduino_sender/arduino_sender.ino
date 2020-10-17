@@ -52,6 +52,11 @@ public:
 
 //rob::aXbeeCore<HardwareSerial> temp(&Serial);
 
+namespace base{
+  bool controllerLock=false;
+  bool isLock(){return controllerLock;}
+  bool turnLock(){return controllerLock=!controllerLock;}
+}
 namespace com{
   rob::aXbeeArduinoHardwareSerial xbeeSerial(Serial);
   rob::aXbeeCoreCallback<1> xbeeCore(&xbeeSerial);
@@ -61,6 +66,7 @@ namespace com{
   void loopCom();
   byte genButtonBit(const int val, const byte shift);
   void sendControll();
+  void sendEmptyControll();
   void printLcd(uint8_t[],uint16_t);
 
   void setupCom(){
@@ -71,7 +77,11 @@ namespace com{
     static regularC sendInterval(100);
     //Serial.print("hey");
     if(sendInterval){
-      sendControll();
+      if(base::isLock()){
+        sendEmptyControll();
+      }else{
+        sendControll();
+      }
     }
     xbeeCore.check();
   }
@@ -113,6 +123,15 @@ namespace com{
     };
     xbee.send(sendArray,ARRAYLEN(sendArray));
   }
+  void sendEmptyControll(){
+    byte sendArray[]={
+      128,
+      128,
+      0,
+      0,
+    };
+    xbee.send(sendArray,ARRAYLEN(sendArray));
+  }
   void printLcd(uint8_t array[],uint16_t arrayLen){
     if(arrayLen<2){
       return;
@@ -131,9 +150,22 @@ void checkPS2(){
   static const int ANALOG_ERR=255;
   if(checkTime){
     PSX.updateState(PS);
-    
     if(ANALOG_RIGHT_Y(PS)==ANALOG_ERR && ANALOG_RIGHT_X(PS)==ANALOG_ERR){
       setupPS2();
+    }
+  }
+}
+void lockPS2(){
+  static regularC lockTime(132);
+  if(lockTime){
+    PSX.updateState(PS);
+    if(PRESSED_SELECT(PS) || PRESSED_START(PS)){
+      lcd.setCursor(13,0);
+      if(base::turnLock()){
+        lcd.print("L");
+      }else{
+        lcd.print(" ");
+      }
     }
   }
 }
@@ -151,4 +183,5 @@ void setup() {
 void loop() {
   com::loopCom();
   checkPS2();
+  lockPS2();
 }
