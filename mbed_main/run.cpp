@@ -31,8 +31,8 @@ rob::aRotaryEncoder &displacementEnc=rob::rotaryEncoder1;
 //float degGainP=0.01121;float degGainI=0.02057;float degGainD=0.00005516;//0A13
 //float degGainP=0.00971;float degGainI=0.01727;float degGainD=0.00005345;//0A16 100us 50times
 //float degGainP=0.00471;float degGainI=0.01077;float degGainD=0.00005345;//0A16 300us 50times
-float degGainP=0.00391;float degGainI=0.01077;float degGainD=0.00004225;//0A17 testrun 1719 300us 50times
-
+//float degGainP=0.00391;float degGainI=0.01077;float degGainD=0.00004225;//0A17 testrun 1719 300us 50times
+float degGainP=0.00400;float degGainI=0.00847;float degGainD=0.00005345;//0A17 testrun 1719 300us 50times
 
 
 
@@ -55,8 +55,10 @@ rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OP
 //float targetDegGainP=0.00000934;float targetDegGainI=0.00000000;float targetDegGainD=0.00000071;//good
 //float targetDegGainP=0.00000744;float targetDegGainI=0.00000045;float targetDegGainD=0.00000245;//good
 //float targetDegGainP=0.00001020;float targetDegGainI=0.00000409;float targetDegGainD=0.00000061;//good
-float targetDegGainP=0.00001005;float targetDegGainI=0.00000421;float targetDegGainD=0.00000041;//good
+//float targetDegGainP=0.00001005;float targetDegGainI=0.00000421;float targetDegGainD=0.00000041;//good
 //float targetDegGainP=0.00003648;float targetDegGainI=0.00000877;float targetDegGainD=0.00000041;//good
+//float targetDegGainP=0.00000575;float targetDegGainI=0.00000160;float targetDegGainD=0.00000041;//0a18 good 0919
+float targetDegGainP=0.00000575;float targetDegGainI=0.00000129;float targetDegGainD=0.00000041;//0a18 good 0919
 
 //float targetDegGainP=0.00000575;float targetDegGainI=0.00000072;float targetDegGainD=0.00000264;//0A07最初
 rob::aPid<float> targetDegPid(targetDegGainP,targetDegGainI,targetDegGainD,CONTROL_CYCLE_TIME_SEC,10,-10);

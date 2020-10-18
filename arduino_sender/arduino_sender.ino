@@ -146,7 +146,7 @@ void setupPS2(){
 }
 
 void checkPS2(){
-  static regularC checkTime(440);
+  static regularC checkTime(1440);
   static const int ANALOG_ERR=255;
   if(checkTime){
     PSX.updateState(PS);
@@ -183,5 +183,5 @@ void setup() {
 void loop() {
   com::loopCom();
   checkPS2();
-  lockPS2();
+  //lockPS2();
 }
