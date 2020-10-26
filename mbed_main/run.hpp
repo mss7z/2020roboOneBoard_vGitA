@@ -26,9 +26,6 @@ extern float degGainP,degGainI,degGainD;
 
 extern float targetDegGainP,targetDegGainI,targetDegGainD;
 
-extern rob::a_imu03a &imu;
-extern rob::aRotaryEncoder &rorycon;
-
 extern float control,controlSum;
 extern float targetDeg;
 
@@ -40,8 +37,6 @@ void setMove(const float valL,const float valR);
 void setUserAdd(const float val);
 void resetGyroAndPid();
 void printDeg();
-void isEmergency(bool);
-float getDeg();
 
 void setupRun();
 void loopRun();

@@ -3,16 +3,6 @@
 
 
 #include "2020roboOneBoardLib/lib.hpp"
-/*
-#define VAL_xbeeCore_serialSpeed 38400
-//ENABLE_tb6643kq_md1;
-//ENABLE_tb6643kq_md2;
-ENABLE_tb6643kq_md3;
-ENABLE_tb6643kq_md4;
-ENABLE_rotaryEncoder1;
-ENABLE_rotaryEncoder2;
-ENABLE_imu03a;
-ENABLE_xbeeCore;*/
 
 namespace base{
 	extern bool isEmergVal;
@@ -26,13 +16,33 @@ namespace base{
 	inline bool turnEmerg(){
 		return isEmergVal=!isEmergVal;
 	}
-	
-	//const float TARGET_DEG_INIT=34.628;
-	//const float TARGET_DEG_INIT=32.676;
-	///const float TARGET_DEG_INIT=30.876;
 	static const float TARGET_DEG_INIT=33.7;
-	
-	
+}
+
+
+namespace deg{
+static const int CALC_DEG_INTERVAL=300;//us
+
+extern rob::a_imu03a &imu;
+extern rob::aRotaryEncoder &rorycon;
+
+extern float deg;
+inline float get(){
+	return deg;
+}
+
+void loopDeg();
+}
+
+namespace axisX{
+static const int CALC_VALX_INTERVAL=300;//us
+
+extern float valX;
+inline float get(){
+	return valX;
+}
+
+void loopAxisX();
 }
 
 #endif

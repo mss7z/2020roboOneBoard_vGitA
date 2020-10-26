@@ -97,22 +97,6 @@ namespace com{
 			return;
 		}
 		
-		/*
-		float forwardVal=0;
-		//0L 1R
-		if(genBoolFromButtonBit(array[2],FORWARD_BTN)){
-			forwardVal+=0.3;
-		}
-		if(genBoolFromButtonBit(array[2],REVERSE_BTN)){
-			forwardVal-=0.3;
-		}
-		
-		const float valL=byte2floatMotorOutput(array[0])+forwardVal;
-		const float valR=byte2floatMotorOutput(array[1])+forwardVal;
-		
-		run::setMove(valL,valR);
-		*/
-		
 		const float rotation=byte2floatMotorOutput(array[1])*0.35;
 		const float base=0.0*0.3;
 		run::setMove(base+rotation,base-rotation);
@@ -134,12 +118,6 @@ namespace com{
 		}
 		ajust.print();
 		
-		/*if(genBoolFromButtonBit(array[2],DEG_UP_BTN)){
-			targetDeg+=0.040;
-		}
-		if(genBoolFromButtonBit(array[2],DEG_DOWN_BTN)){
-			targetDeg-=0.040;
-		}*/
 		if(genBoolFromButtonBit(array[2],CIRCLE_BTN)){
 			//run::targetDeg=base::TARGET_DEG_INIT;
 			run::controlSum=0.0;
@@ -172,10 +150,8 @@ namespace com{
 	void loopCom(){
 		static rob::regularC_ms printLcdTime(100);
 		if(printLcdTime){
-			//printLcd(0,0,rob::flt(run::deg-run::degPid.read()));
 			printLcd(0,0,"o");
 			printLcd(1,0,rob::flt(run::control));
-			//printLcd(9,0,rob::flt(run::get))
 		}
 	}
 	void printReceive(){
@@ -240,8 +216,8 @@ namespace checker{
 			noChecked=false;
 			base::setEmerg(false);
 		}
-		if(maxDeg<run::getDeg()){
-			maxDeg=run::getDeg();
+		if(maxDeg<deg::get()){
+			maxDeg=deg::get();
 		}
 		printToLcd();
 	}
@@ -256,6 +232,8 @@ int main(){
 	
 	//This is a test code
 	while(true){
+		deg::loopDeg();
+		axisX::loopAxisX();
 		if(printInterval){
 			//com::printReceive();
 			pc.printf("enc2:%6d ",rob::rotaryEncoder2.read());
