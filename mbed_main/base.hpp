@@ -26,6 +26,8 @@ static const int CALC_DEG_INTERVAL=300;//us
 extern rob::a_imu03a &imu;
 extern rob::aRotaryEncoder &rorycon;
 
+extern float max;
+
 extern float deg;
 inline float get(){
 	return deg;

@@ -15,7 +15,7 @@ rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OP
 float targetDegGainP=0.00000575;float targetDegGainI=0.00000129;float targetDegGainD=0.00000041;//0a18 good 0919
 
 //float targetDegGainP=0.00000575;float targetDegGainI=0.00000072;float targetDegGainD=0.00000264;//0A07最初
-rob::aPid<float> targetDegPid(targetDegGainP,targetDegGainI,targetDegGainD,CONTROL_CYCLE_TIME_SEC,10,-10);
+rob::aPid<float> targetDegPid(targetDegGainP,targetDegGainI,targetDegGainD,CONTROL_CYCLE_TIME_SEC,0.2,-0.2);
 
 float realOutputTimeVal=0.0;
 
@@ -89,7 +89,7 @@ void printDeg(){
 	using namespace rob;
 	pc.printf("  TDPidRead:%8s",flt(targetDegPid.read()));
 	pc.printf("  displacement:%8s targetDeg:%7s +Add:%7s deg:%7s",flt(axisX::get()),flt(targetDeg),flt(targetDeg+targetDegAdd),flt(deg::get()));
-	pc.printf(" diff:%s",flt(deg::get()-degPid.read()));
+	pc.printf(" diff:%6s rpm:%6s",flt(deg::get()-degPid.read()),flt(deg::max));
 	
 	pc.printf("\n");
 }

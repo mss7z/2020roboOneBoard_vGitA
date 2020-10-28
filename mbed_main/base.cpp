@@ -14,7 +14,7 @@ extern rob::aRotaryEncoder &rorycon;
 //rob::a_imu03a &imu=rob::imu03a;
 rob::aRotaryEncoder &rorycon=rob::rotaryEncoder2;
 
-//float accelDeg=0.0,gyroDeg=0.0,deg=0.0;
+float max=0.0;
 float deg=0.0;
 
 float calcAccelDeg();
@@ -71,8 +71,13 @@ float calcAccelDeg(){
 
 void loopDeg(){
 	static rob::regularC_us calcDegTime(CALC_DEG_INTERVAL);
+	static rob::delta<float> rpm(CALC_DEG_INTERVAL/1000000.0);
 	if(calcDegTime){
 		calcDegByRorycon();
+		float rpmVal=abs((rpm.f(deg)*60.0)/360.0);
+		if(max<rpmVal){
+			max=rpmVal;
+		}
 	}
 }
 }
@@ -85,7 +90,7 @@ float valX=0.0;
 void calcValx(){
 	const int pulsePerRevolution=125*4;
 	static float raw=0.0;
-	float calcK=0.02;
+	float calcK=0.002;
 	//calcK*=abs(rorycon.read()-raw)*0.5;
 	raw=(raw*(1.0-calcK))+displacementEnc.read()*calcK;
 	valX=(80.0*3.1415926535*raw)/pulsePerRevolution;

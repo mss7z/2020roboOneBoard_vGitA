@@ -45,8 +45,8 @@ namespace com{
 		ajustFloat("P",&run::degGainP,0.0001),
 		ajustFloat("I",&run::degGainI,0.0001),
 		ajustFloat("D",&run::degGainD,0.0000001),
-		ajustFloat("p",&run::targetDegGainP,0.0000001),
-		ajustFloat("i",&run::targetDegGainI,0.00000001),
+		ajustFloat("p",&run::targetDegGainP,0.000001),
+		ajustFloat("i",&run::targetDegGainI,0.0000001),
 		ajustFloat("d",&run::targetDegGainD,0.00000001),
 		ajustFloat("m",&run::targetDegBaseChangeMult,0.001),
 	};
