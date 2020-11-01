@@ -22,15 +22,17 @@ namespace base{
 
 namespace deg{
 static const int CALC_DEG_INTERVAL=300;//us
+static const int CALC_DEG_IMU_INTERVAL=700;//us
 
 extern rob::a_imu03a &imu;
 extern rob::aRotaryEncoder &rorycon;
 
 extern float max;
 
-extern float deg;
+//extern float deg;
+extern float degRorycon,degImu,accelDeg,gyroDeg;
 inline float get(){
-	return deg;
+	return degRorycon*0.9+degImu*0.1;
 }
 
 void loopDeg();

@@ -1,6 +1,6 @@
 
-#define ENABLE_tb6643kq_md1
-#define ENABLE_tb6643kq_md2
+//#define ENABLE_tb6643kq_md1
+//#define ENABLE_tb6643kq_md2
 #define ENABLE_tb6643kq_md3
 #define ENABLE_tb6643kq_md4
 #define ENABLE_rotaryEncoder1
