@@ -89,6 +89,11 @@ void loopDeg(){
 	if(calcDegImuTime){
 		calcDegByImu();
 	}
+	static rob::regularC_us calcImuOffsetTime(CALC_DEG_IMU_OFFSET_INTERVAL);
+	static rob::delta<float> ddegCalcer(CALC_DEG_IMU_OFFSET_INTERVAL/1000000.0);
+	if(calcImuOffsetTime){
+		imu.gyroZ.calcOffsetByTrueDdeg(ddegCalcer.f(accelDeg*0.5+degRorycon*0.5),0.0001);
+	}
 }
 }
 

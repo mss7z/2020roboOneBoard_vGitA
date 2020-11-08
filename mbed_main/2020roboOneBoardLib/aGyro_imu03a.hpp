@@ -67,6 +67,7 @@ class imu03aGyro:
 	
 	int16_t getOffsetRaw();
 	float rawVal2DDeg(const int16_t);
+	int16_t ddegToRawVal(const float);
 	
 	static const int deltaT=700;//us
 	Ticker tc;
@@ -78,6 +79,8 @@ class imu03aGyro:
 		imu03aGyroAndAccelBase(c,l,h),deg(0.0){}
 	float getDDeg();
 	void resetOffset();
+	
+	void calcOffsetByTrueDdeg(const float ddeg,const float mult=0.001);
 	/*
 	void resetDeg();
 	void startDeg();

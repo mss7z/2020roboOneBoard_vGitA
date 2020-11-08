@@ -23,6 +23,7 @@ namespace base{
 namespace deg{
 static const int CALC_DEG_INTERVAL=300;//us
 static const int CALC_DEG_IMU_INTERVAL=700;//us
+static const int CALC_DEG_IMU_OFFSET_INTERVAL=3000;//us
 
 extern rob::a_imu03a &imu;
 extern rob::aRotaryEncoder &rorycon;

@@ -112,6 +112,9 @@ float imu03aGyro::rawVal2DDeg(const int16_t val){
 	//定数についてはimu03aSetting::resetModuleを参照のこと
 	return (val*500.0)/(float)0x7fff;
 }
+int16_t imu03aGyro::ddegToRawVal(const float val){
+	return (int16_t)((val/500.0)*(float)0x7fff);
+}
 
 void imu03aGyro::sumDdegP(){
 	deg+=((float)deltaT/1000000.0)*getDDeg();
@@ -123,6 +126,11 @@ float imu03aGyro::getDDeg(){
 void imu03aGyro::resetOffset(){
 	offsetRawVal=getOffsetRaw();
 }
+void imu03aGyro::calcOffsetByTrueDdeg(const float ddeg,const float mult){
+	const float estimated=imu03aGyroAndAccelBase::getRawVal()-ddegToRawVal(ddeg);
+	offsetRawVal=(int16_t)(mult*estimated+(1.0-mult)*offsetRawVal);
+}
+	
 /*void imu03aGyro::resetDeg(){
 	deg=0.0;
 	tc.detach();
@@ -325,7 +333,6 @@ int16_t a_imu03a::getRawVal(){
 double a_imu03a::rawValToDdeg(int16_t val){
 	return (val*500.0)/(double)0x7fff;
 }
-
 bool a_imu03a::isNormalChecker(){
 	int val;
 	comS();
