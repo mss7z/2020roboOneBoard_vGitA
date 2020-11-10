@@ -16,7 +16,7 @@ rob::aRotaryEncoder &rorycon=rob::rotaryEncoder2;
 
 float max=0.0;
 //float deg=0.0;
-float degRorycon=0.0,degImu=0.0,accelDeg=0.0,gyroDeg=0.0;
+float rawDegRorycon=0.0,degRorycon=0.0,degImu=0.0,accelDeg=0.0,gyroDeg=0.0;
 
 float calcAccelDeg();
 void calcDegByImu();
@@ -66,12 +66,11 @@ void calcDegByRorycon(){
 		rorycon.set(0);
 	}
 	const double pulsePerRevolution=2048*4;
-	static float raw=0.0;
 	float calcK=0.02;
 	//calcK*=abs(rorycon.read()-raw)*0.5;
-	raw=(raw*(1.0-calcK))+rorycon.read()*calcK;
+	rawDegRorycon=-1.08523*360.0*(rorycon.read()/pulsePerRevolution);
 	//定数倍はなぜかずれるから
-	degRorycon=-1.08523*360.0*(raw/pulsePerRevolution);
+	degRorycon=(rawDegRorycon*(1.0-calcK))+rawDegRorycon*calcK;
 }
 
 
@@ -92,7 +91,7 @@ void loopDeg(){
 	static rob::regularC_us calcImuOffsetTime(CALC_DEG_IMU_OFFSET_INTERVAL);
 	static rob::delta<float> ddegCalcer(CALC_DEG_IMU_OFFSET_INTERVAL/1000000.0);
 	if(calcImuOffsetTime){
-		imu.gyroZ.calcOffsetByTrueDdeg(ddegCalcer.f(accelDeg*0.5+degRorycon*0.5),0.0001);
+		//imu.gyroZ.calcOffsetByTrueDdeg(ddegCalcer.f(degRorycon),0.0001);
 	}
 }
 }

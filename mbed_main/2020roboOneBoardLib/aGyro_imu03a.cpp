@@ -128,6 +128,8 @@ void imu03aGyro::resetOffset(){
 }
 void imu03aGyro::calcOffsetByTrueDdeg(const float ddeg,const float mult){
 	const float estimated=imu03aGyroAndAccelBase::getRawVal()-ddegToRawVal(ddeg);
+	using namespace rob;
+	pc.printf("off: %20d est:%20s ddeg:%20s\n",ddegToRawVal(rawVal2DDeg(offsetRawVal)),flt(estimated),flt(ddeg));
 	offsetRawVal=(int16_t)(mult*estimated+(1.0-mult)*offsetRawVal);
 }
 	

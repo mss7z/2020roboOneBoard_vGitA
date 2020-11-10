@@ -31,7 +31,7 @@ extern rob::aRotaryEncoder &rorycon;
 extern float max;
 
 //extern float deg;
-extern float degRorycon,degImu,accelDeg,gyroDeg;
+extern float rawDegRorycon,degRorycon,degImu,accelDeg,gyroDeg;
 inline float get(){
 	return degRorycon*0.9+degImu*0.1;
 }
