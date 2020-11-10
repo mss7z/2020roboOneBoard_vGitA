@@ -127,10 +127,12 @@ void imu03aGyro::resetOffset(){
 	offsetRawVal=getOffsetRaw();
 }
 void imu03aGyro::calcOffsetByTrueDdeg(const float ddeg,const float mult){
-	const float estimated=imu03aGyroAndAccelBase::getRawVal()-ddegToRawVal(ddeg);
+	const float estimated=ddegToRawVal(ddeg)-imu03aGyroAndAccelBase::getRawVal();
+	//static float offsetRawValFloat=offsetRawVal;
 	using namespace rob;
 	pc.printf("off: %20d est:%20s ddeg:%20s\n",ddegToRawVal(rawVal2DDeg(offsetRawVal)),flt(estimated),flt(ddeg));
 	offsetRawVal=(int16_t)(mult*estimated+(1.0-mult)*offsetRawVal);
+	//offsetRawVal=offsetRawValFloat;
 }
 	
 /*void imu03aGyro::resetDeg(){
