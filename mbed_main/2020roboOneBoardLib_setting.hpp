@@ -7,5 +7,5 @@
 #define ENABLE_rotaryEncoder2
 #define ENABLE_imu03a
 #define ENABLE_xbeeCore
-#define VAL_xbeeCore_serialSpeed 38400
+#define VAL_xbeeCore_serialSpeed 115200
 

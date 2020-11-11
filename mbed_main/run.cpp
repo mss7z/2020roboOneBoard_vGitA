@@ -97,6 +97,12 @@ void printDeg(){
 	pc.printf("\n");
 }
 
+bool isGoodDeg(){
+	static const float PM=0.3;
+	return PM>abs(getDegDiff());
+}
+
+
 void setupRun(){
 	resetGyroAndPid();
 	targetDegPid.set(0.0);

@@ -6,6 +6,8 @@
 
 namespace com{
 	rob::aXbeeCom xbee(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9C,0xF1));
+	rob::aXbeeCom kanto(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9C,0x79));
+	
 	
 	uint8_t receiveArray[255]={0};
 	uint16_t receiveSize=0;
@@ -17,6 +19,7 @@ namespace com{
 	float byte2floatMotorOutput(uint8_t);
 	bool genBoolFromButtonBit(uint8_t,uint8_t);
 	uint8_t calcStrLen(const char []);
+	void sendToKanto();
 	
 	//外部
 	void setupCom();
@@ -116,7 +119,7 @@ namespace com{
 		if(genBoolFromButtonBit(array[2],CROSS_BTN)){
 			ajust.back();
 		}
-		ajust.print();
+		
 		
 		if(genBoolFromButtonBit(array[2],CIRCLE_BTN)){
 			//run::targetDeg=base::TARGET_DEG_INIT;
@@ -144,14 +147,21 @@ namespace com{
 	bool genBoolFromButtonBit(const uint8_t source,const uint8_t shift){
 		return (bool)(0x1&(source>>shift));
 	}
+	
 	void setupCom(){
 		xbee.attach(callback(ifReceiveFromController));
 	}
 	void loopCom(){
-		static rob::regularC_ms printLcdTime(100);
+		static rob::regularC_ms printLcdTime(160);
 		if(printLcdTime){
 			printLcd(0,0,"o");
 			printLcd(1,0,rob::flt(run::control));
+			ajust.print();
+		}
+		
+		static rob::regularC_ms sendToKantoTime(90);
+		if(sendToKantoTime){
+			sendToKanto();
 		}
 	}
 	void printReceive(){
@@ -169,6 +179,15 @@ namespace com{
 			}
 		}
 		return i+1;
+	}
+	void sendToKanto(){
+		uint8_t c;
+		if(run::isGoodDeg()){
+			c='N';
+		}else{
+			c='R';
+		}
+		kanto.send(&c,1);
 	}
 	void printLcd(const uint8_t cow,const uint8_t row,const char str[]){
 		const uint8_t arrayLen=calcStrLen(str)+2;

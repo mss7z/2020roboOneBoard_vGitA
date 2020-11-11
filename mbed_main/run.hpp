@@ -37,6 +37,7 @@ void setMove(const float valL,const float valR);
 void setUserAdd(const float val);
 void resetGyroAndPid();
 void printDeg();
+bool isGoodDeg();
 
 void setupRun();
 void loopRun();

@@ -66,7 +66,7 @@ extern a_imu03a imu03a;
 
 #ifdef ENABLE_xbeeCore
 //tx rx 
-extern aXbeeCoreCallback<1> xbeeCore;
+extern aXbeeCoreCallback<2> xbeeCore;
 #endif
 
 

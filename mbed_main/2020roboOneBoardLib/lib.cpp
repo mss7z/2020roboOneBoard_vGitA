@@ -57,7 +57,7 @@ a_imu03a imu03a(PC_12,PC_11,PC_10,PB_1);
 
 #ifdef ENABLE_xbeeCore
 //tx rx 
-aXbeeCoreCallback<1> xbeeCore(PC_6,PC_7,VAL_xbeeCore_serialSpeed);
+aXbeeCoreCallback<2> xbeeCore(PC_6,PC_7,VAL_xbeeCore_serialSpeed);
 #endif
 
 
