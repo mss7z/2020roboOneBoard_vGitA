@@ -150,16 +150,16 @@ namespace com{
 	
 	void setupCom(){
 		xbee.attach(callback(ifReceiveFromController));
+		printLcd(0,0,"o");
 	}
 	void loopCom(){
-		static rob::regularC_ms printLcdTime(160);
+		static rob::regularC_ms printLcdTime(180);
 		if(printLcdTime){
-			printLcd(0,0,"o");
 			printLcd(1,0,rob::flt(run::control));
 			ajust.print();
 		}
 		
-		static rob::regularC_ms sendToKantoTime(90);
+		static rob::regularC_ms sendToKantoTime(100);
 		if(sendToKantoTime){
 			sendToKanto();
 		}
@@ -181,14 +181,22 @@ namespace com{
 		return i+1;
 	}
 	void sendToKanto(){
+		bool isGood=run::isGoodDeg();
+		static bool preIsGood=false;
+		if(preIsGood==isGood){
+			return;
+		}
+		preIsGood=isGood;
 		uint8_t c;
-		if(run::isGoodDeg()){
+		if(isGood){
 			c='N';
 		}else{
 			c='R';
 		}
 		kanto.send(&c,1);
+		return;
 	}
+		
 	void printLcd(const uint8_t cow,const uint8_t row,const char str[]){
 		const uint8_t arrayLen=calcStrLen(str)+2;
 		static uint8_t array[MAX_LCD_STRLEN]={};
