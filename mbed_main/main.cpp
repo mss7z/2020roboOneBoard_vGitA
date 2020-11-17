@@ -231,21 +231,21 @@ namespace checker{
 	}
 	
 	void loopChecker(){
-		static float maxDeg=0.0;
-		static bool noChecked=true;
+		//static float maxDeg=0.0;
+		//static bool noChecked=true;
 		static rob::regularC_ms controlTime(500);
 		
 		if(!controlTime){
 			return;
 		}
-		
+		/*
 		if(maxDeg>50.0 && noChecked){
 			noChecked=false;
 			base::setEmerg(false);
 		}
 		if(maxDeg<deg::get()){
 			maxDeg=deg::get();
-		}
+		}*/
 		printToLcd();
 	}
 }
@@ -254,6 +254,7 @@ int main(){
 	rob::regularC_ms printInterval(100);
 	com::setupCom();
 	run::setupRun();
+	deg::setupDeg();
 	
 	com::printLcd(0,0,"hello");
 	

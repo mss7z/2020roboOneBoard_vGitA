@@ -63,9 +63,9 @@ class imu03aGyro:
 	public imu03aGyroAndAccelBase
 {
 	private:
-	int16_t offsetRawVal;
+	float offsetRawVal;
 	
-	int16_t getOffsetRaw();
+	float getOffsetRaw();
 	float rawVal2DDeg(const int16_t);
 	int16_t ddegToRawVal(const float);
 	

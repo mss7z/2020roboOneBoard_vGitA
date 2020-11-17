@@ -98,7 +98,7 @@ int16_t imu03aGyroAndAccelBase::getRawVal(){
 	return rval;
 }
 
-int16_t imu03aGyro::getOffsetRaw(){
+float imu03aGyro::getOffsetRaw(){
 	const int N=1000;//1000
 	long sum=0;
 	for(int i=0;i<N;i++){
@@ -120,19 +120,17 @@ void imu03aGyro::sumDdegP(){
 	deg+=((float)deltaT/1000000.0)*getDDeg();
 }
 float imu03aGyro::getDDeg(){
-	return rawVal2DDeg(imu03aGyroAndAccelBase::getRawVal()-offsetRawVal);
+	return rawVal2DDeg(imu03aGyroAndAccelBase::getRawVal()-(int16_t)offsetRawVal);
 }
 
 void imu03aGyro::resetOffset(){
 	offsetRawVal=getOffsetRaw();
 }
 void imu03aGyro::calcOffsetByTrueDdeg(const float ddeg,const float mult){
-	const float estimated=ddegToRawVal(ddeg)+imu03aGyroAndAccelBase::getRawVal();
-	//static float offsetRawValFloat=offsetRawVal;
-	using namespace rob;
-	pc.printf("off: %20d est:%20s ddeg:%20s\n",ddegToRawVal(rawVal2DDeg(offsetRawVal)),flt(estimated),flt(ddeg));
-	offsetRawVal=(int16_t)(mult*estimated+(1.0-mult)*offsetRawVal);
-	//offsetRawVal=offsetRawValFloat;
+	const float estimated=imu03aGyroAndAccelBase::getRawVal()-ddegToRawVal(ddeg);
+	//using namespace rob;
+	//pc.printf("off: %20d est:%20s gai:%20d sef:%20d ddeg:%20s\n",(int16_t)offsetRawVal,flt(estimated),ddegToRawVal(ddeg),imu03aGyroAndAccelBase::getRawVal(),flt(ddeg));
+	offsetRawVal=(float)(mult*estimated+(1.0-mult)*offsetRawVal);
 }
 	
 /*void imu03aGyro::resetDeg(){
