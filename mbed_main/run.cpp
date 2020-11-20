@@ -81,8 +81,10 @@ void setMove(const float valL,const float valR){
 }
 
 void setUserAdd(const float add){//setUSERRRRRRRRRRR
-	displacementAdd+=add*4.0;
-	targetDegPid.set(displacementAdd);
+	static float displacementAddFilter=0.0;
+	displacementAdd+=add*10.0;//4.0
+	displacementAddFilter=0.3*displacementAdd+0.7*displacementAddFilter;
+	targetDegPid.set(displacementAddFilter);
 }
 void resetGyroAndPid(){
 	degPid.reset();

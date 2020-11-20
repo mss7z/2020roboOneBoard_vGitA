@@ -9,7 +9,6 @@
 #include "aXbee.hpp"
 #include "aPid.hpp"
 
-#include "../2020roboOneBoardLib_setting.hpp"
 
 namespace rob{
 
@@ -33,41 +32,6 @@ namespace rob{
 //tx rx
 #define ENABLE_xbeeCore aXbeeCoreCallback<1> xbeeCore(PC_6,PC_7,VAL_xbeeCore_serialSpeed);
 */
-
-#ifdef ENABLE_tb6643kq_md1
-extern aTB6643KQ tb6643kq_md1;
-#endif
-
-#ifdef ENABLE_tb6643kq_md2
-extern aTB6643KQ tb6643kq_md2;
-#endif
-
-#ifdef ENABLE_tb6643kq_md3
-extern aTB6643KQ tb6643kq_md3;
-#endif
-
-#ifdef ENABLE_tb6643kq_md4
-extern aTB6643KQ tb6643kq_md4;
-#endif
-
-#ifdef ENABLE_rotaryEncoder1
-//aRotaryEncoder rotaryEncoder1(PA_11,PA_12,PullDown);
-extern aRotaryEncoder rotaryEncoder1;
-#endif
-
-#ifdef ENABLE_rotaryEncoder2
-extern aRotaryEncoder rotaryEncoder2;
-#endif
-
-#ifdef ENABLE_imu03a
-//mosi miso slck csPin
-extern a_imu03a imu03a;
-#endif
-
-#ifdef ENABLE_xbeeCore
-//tx rx 
-extern aXbeeCoreCallback<2> xbeeCore;
-#endif
 
 
 }
