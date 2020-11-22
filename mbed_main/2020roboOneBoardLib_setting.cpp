@@ -1,7 +1,7 @@
 #include "2020roboOneBoardLib_setting.hpp"
 
 
-
+namespace rob{
 #ifdef ENABLE_tb6643kq_md1
 aTB6643KQ tb6643kq_md1(PB_4,PC_8);
 #endif
@@ -39,3 +39,4 @@ aXbeeCoreCallback<VAL_xbeeCore_nodeNum> xbeeCore(PC_6,PC_7,VAL_xbeeCore_serialSp
 #endif
 
 
+}

@@ -2,7 +2,7 @@
 #define BASE_HPP_INCLUDE_GUARD
 
 
-#include "2020roboOneBoardLib/lib.hpp"
+#include "2020roboOneBoardLib_setting.hpp"
 
 namespace base{
 	extern bool isEmergVal;

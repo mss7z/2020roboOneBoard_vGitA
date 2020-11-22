@@ -1,7 +1,7 @@
-#ifndef 2020ROBOONEBOARDLIB_INCLUDE_GUARD
-#define 2020ROBOONEBOARDLIB_INCLUDE_GUARD
+#ifndef M2020ROBOONEBOARDLIB_INCLUDE_GUARD
+#define M2020ROBOONEBOARDLIB_INCLUDE_GUARD
 
-#include "../2020roboOneBoardLib/lib.hpp"
+#include "2020roboOneBoardLib/lib.hpp"
 
 //#define ENABLE_tb6643kq_md1
 //#define ENABLE_tb6643kq_md2
