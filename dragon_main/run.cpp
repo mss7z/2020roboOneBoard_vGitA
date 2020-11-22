@@ -6,7 +6,10 @@ motor motorR(rob::tb6643kq_md4,1.0);
 
 //float degGainP=0.00471;float degGainI=0.01077;float degGainD=0.00005345;//0A16 300us 50times
 //float degGainP=0.00391;float degGainI=0.01077;float degGainD=0.00004225;//0A17 testrun 1719 300us 50times
-float degGainP=0.00400;float degGainI=0.00847;float degGainD=0.00005345;//0A17 testrun 1719 300us 50times
+//float degGainP=0.00400;float degGainI=0.00847;float degGainD=0.00005345;//0A17 testrun 1719 300us 50times
+//float degGainP=0.00969;float degGainI=0.01027;float degGainD=0.00006535;//0B22 testrun 1719 300us 50times
+float degGainP=0.00669;float degGainI=0.01347;float degGainD=0.00005084;//0B22 125mm tiaya
+
 
 //float degGainP=0.001812;float degGainI=0.000013;float degGainD=0.00;
 rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OPERATION_MAX,PID_OPERATION_MIN);
@@ -14,7 +17,9 @@ rob::aPid<float> degPid(degGainP,degGainI,degGainD,CONTROL_CYCLE_TIME_SEC,PID_OP
 //float targetDegGainP=0.00000575;float targetDegGainI=0.00000160;float targetDegGainD=0.00000041;//0a18 good 0919
 //float targetDegGainP=0.00000575;float targetDegGainI=0.00000129;float targetDegGainD=0.00000041;//0a18 good 0919
 //float targetDegGainP=0.00000675;float targetDegGainI=0.00000178;float targetDegGainD=0.00000048;//0a18 good 0919
-float targetDegGainP=0.00000675;float targetDegGainI=0.00001877;float targetDegGainD=0.00000050;//0b15 good
+//float targetDegGainP=0.00000675;float targetDegGainI=0.00001877;float targetDegGainD=0.00000050;//0b15 good
+//float targetDegGainP=0.00000675;float targetDegGainI=0.00001877;float targetDegGainD=0.00000050;//0b15 good
+float targetDegGainP=0.00001375;float targetDegGainI=0.00003647;float targetDegGainD=0.00000037;//0b22 125mm taiya
 
 
 //float targetDegGainP=0.00000575;float targetDegGainI=0.00000072;float targetDegGainD=0.00000264;//0A07最初

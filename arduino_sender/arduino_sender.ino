@@ -56,12 +56,17 @@ namespace base{
   bool controllerLock=false;
   bool isLock(){return controllerLock;}
   bool turnLock(){return controllerLock=!controllerLock;}
+
+  bool isControllerReadable=false;
+  bool isReadTime(){return isControllerReadable;}
 }
 namespace com{
   rob::aXbeeArduinoHardwareSerial xbeeSerial(Serial);
-  rob::aXbeeCoreCallback<1> xbeeCore(&xbeeSerial);
-  rob::aXbeeCom xbee(xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xa2,0x00,0x40,0xCA,0x9D,0x3B));
-
+  rob::aXbeeCoreCallback<2> xbeeCore(&xbeeSerial);
+  rob::aXbeeCom tomoshibi(xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xa2,0x00,0x40,0xCA,0x9D,0x3B));
+  rob::aXbeeCom dragon(xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xa2,0x00,0x40,0xCA,0x9D,0x4D));
+  rob::aXbeeCom *xbeeP=&tomoshibi;
+  
   void setupCom();
   void loopCom();
   byte genButtonBit(const int val, const byte shift);
@@ -71,12 +76,14 @@ namespace com{
 
   void setupCom(){
     xbeeSerial.begin(38400);
-    xbee.attach(printLcd);
+    tomoshibi.attach(printLcd);
+    //dragon.attach(printLcd);
   }
   void loopCom(){
-    static regularC sendInterval(100);
+    //static regularC sendInterval(100);
     //Serial.print("hey");
-    if(sendInterval){
+    //if(sendInterval){
+    if(base::isReadTime()){
       if(base::isLock()){
         sendEmptyControll();
       }else{
@@ -90,7 +97,6 @@ namespace com{
     return ((byte)(val!=0))<<shift;
   }
   void sendControll(){
-    PSX.updateState(PS);
     byte buttonBit1=0,buttonBit2=0;
     enum buttonBit1{
       UP_BTN,
@@ -121,7 +127,7 @@ namespace com{
       buttonBit1,
       buttonBit2,
     };
-    xbee.send(sendArray,ARRAYLEN(sendArray));
+    xbeeP->send(sendArray,ARRAYLEN(sendArray));
   }
   void sendEmptyControll(){
     byte sendArray[]={
@@ -130,7 +136,7 @@ namespace com{
       0,
       0,
     };
-    xbee.send(sendArray,ARRAYLEN(sendArray));
+    xbeeP->send(sendArray,ARRAYLEN(sendArray));
   }
   void printLcd(uint8_t array[],uint16_t arrayLen){
     if(arrayLen<2){
@@ -139,6 +145,23 @@ namespace com{
     lcd.setCursor(array[0],array[1]);
     lcd.print((char*)(array+2));
   }
+  void printConnectedMachine(const char c){
+    lcd.setCursor(13,0);
+    lcd.print(c);
+  }
+    
+  void turnMachine(){
+    lcd.clear();
+    xbeeP->attach(NULL);
+    if(xbeeP==&tomoshibi){
+      xbeeP=&dragon;
+      printConnectedMachine('D');
+    }else{
+      xbeeP=&tomoshibi;
+      printConnectedMachine('t');
+    }
+    xbeeP->attach(printLcd);
+  }
 }
 
 void setupPS2(){
@@ -146,12 +169,14 @@ void setupPS2(){
 }
 
 void checkPS2(){
-  static regularC checkTime(1440);
+  //static regularC checkTime(1440);
   static const int ANALOG_ERR=255;
-  if(checkTime){
-    PSX.updateState(PS);
+  if(base::isReadTime()){
     if(ANALOG_RIGHT_Y(PS)==ANALOG_ERR && ANALOG_RIGHT_X(PS)==ANALOG_ERR){
       setupPS2();
+    }
+    if(PRESSED_R1(PS)){
+      com::turnMachine();
     }
   }
 }
@@ -181,7 +206,13 @@ void setup() {
 }
 
 void loop() {
+  static regularC readTime(100);
+  if(readTime){
+    PSX.updateState(PS);
+    base::isControllerReadable=true;
+  }
   com::loopCom();
   checkPS2();
   //lockPS2();
+  base::isControllerReadable=false;
 }
