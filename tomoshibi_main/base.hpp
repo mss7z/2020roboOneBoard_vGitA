@@ -3,6 +3,7 @@
 
 
 #include "2020roboOneBoardLib_setting.hpp"
+#include "valueLink/lib.hpp"
 
 namespace base{
 	extern bool isEmergVal;

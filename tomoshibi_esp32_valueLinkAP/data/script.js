@@ -28,6 +28,34 @@ function send(msg){
 }
 
 class value{
+	addSingleBtn(sendVal,classVal,innerVal){
+		const selfID=this.smallID;
+		let down=document.createElement("div");
+		down.setAttribute("class",classVal);
+		down.innerHTML=innerVal;
+		down.onclick=function(){
+			send(`\{\"${selfID}\":${sendVal}\}`);
+		}
+		let listener=function(endEvent){
+			const intervalID=setInterval(function(){
+				send(`\{\"${selfID}\":${sendVal}\}`);
+			},300);
+			const endEventListener=function(){
+				return function f(){
+					down.removeEventListener(endEvent,f,false);
+					clearInterval(intervalID);
+				}
+			}
+			down.addEventListener(endEvent,endEventListener());
+		}
+		down.addEventListener("mousedown",function(){
+			listener("mouseup");
+		});
+		down.addEventListener("touchstart",function(){
+			listener("touchend");
+		});
+		return down;
+	}
 	createMyDiv(){
 		this.selfMother=document.createElement("div");
 		this.selfMother.setAttribute("id","smallID-"+this.smallID);
@@ -46,20 +74,10 @@ class value{
 	addBtnToMyDiv(){
 		const selfSmallID=this.smallID;
 		
-		this.down=document.createElement("div");
-		this.down.setAttribute("class","downBtn btn");
-		this.down.innerHTML="-";
-		this.down.onclick=function(){
-			send(`\{\"${selfSmallID}\":-1.0\}`);
-		}
+		this.down=this.addSingleBtn("1.0","downBtn btn","-");
 		this.selfMother.insertBefore(this.down,this.selfMother.firstChild);
 		
-		this.up=document.createElement("div");
-		this.up.setAttribute("class","upBtn btn");
-		this.up.innerHTML="+";
-		this.up.onclick=function(){
-			send(`\{\"${selfSmallID}\":1.0\}`);
-		}
+		this.up=this.addSingleBtn("1.0","upBtn btn","+");
 		this.selfMother.insertBefore(this.up,null);
 	}
 		
@@ -92,9 +110,66 @@ class value{
 	}
 	
 }
+/*
 let testVal=new value("x");
 testVal.setVal(6.99);
-testVal.setName("testValName");
+testVal.setName("testValName");*/
+
+class crossBtn{
+	addSingleBtn(sendVal,classVal,innerVal){
+		const selfID=this.id;
+		let down=document.createElement("div");
+		down.setAttribute("class",classVal);
+		down.innerHTML=innerVal;
+		down.onclick=function(){
+			send(`\{\"${selfID}\":\"${sendVal}\"\}`);
+		}
+		let listener=function(endEvent){
+			const intervalID=setInterval(function(){
+				send(`\{\"${selfID}\":\"${sendVal}\"\}`);
+			},300);
+			const endEventListener=function(){
+				return function f(){
+					down.removeEventListener(endEvent,f,false);
+					clearInterval(intervalID);
+				}
+			}
+			down.addEventListener(endEvent,endEventListener());
+		}
+		down.addEventListener("mousedown",function(){
+			listener("mouseup");
+		});
+		down.addEventListener("touchstart",function(){
+			listener("touchend");
+		});
+		return down;
+	}
+		
+	createMyDiv(){
+		this.selfMother=document.createElement("div");
+		this.selfMother.setAttribute("id","crossBtn-"+this.id);
+		
+		this.down=this.addSingleBtn("D","downCrossBtn","D");
+		this.selfMother.appendChild(this.down);
+		
+		this.up=this.addSingleBtn("U","upCrossBtn","U");
+		this.selfMother.appendChild(this.up);
+		
+		this.left=this.addSingleBtn("L","leftCrossBtn","L");
+		this.selfMother.appendChild(this.left);
+		
+		this.right=this.addSingleBtn("R","rightCrossBtn","R");
+		this.selfMother.appendChild(this.right);
+		
+		let mother=document.getElementById("btnField");
+		mother.appendChild(this.selfMother);
+	}
+	constructor(id){
+		this.id=id;
+		this.createMyDiv();
+	}
+}
+
 class valueManager{
 	isID(c){
 		return c.length==1;
@@ -107,18 +182,34 @@ class valueManager{
 		const str=c.toLowerCase();
 		return str[0];
 	}
+	procID(id,vals){
+		if(id[0]=='+'){
+			if(!(id in this.list)){
+				this.list[id]=new crossBtn(id);
+			}
+			return true;
+		}
+		return false;
+	}
+	procValueID(id,vals){
+		const smallID=this.bigIDtoSmallID(id);
+		if(!(smallID in this.list)){
+			this.list[smallID]=(new value(smallID));
+		}
+		if(this.isBigID(id)){
+			this.list[smallID].setName(vals);
+		}else{
+			this.list[smallID].setVal(vals);
+		}
+	}
 	procJson(json){
 		for(const i in json){
 			if(this.isID(i)){
 				const id=i[0];
-				const smallID=this.bigIDtoSmallID(id);
-				if(!(smallID in this.list)){
-					this.list[smallID]=(new value(smallID));
-				}
-				if(this.isBigID(i)){
-					this.list[smallID].setName(json[i]);
+				if(this.procID(id,json[i])){
+					continue;
 				}else{
-					this.list[smallID].setVal(json[i]);
+					this.procValueID(id,json[i]);
 				}
 			}
 		}
@@ -128,7 +219,7 @@ class valueManager{
 	}
 }
 let manager=new valueManager();
-let json=JSON.parse("{\"A\":\"name\",\"a\":3.145}");
+let json=JSON.parse("{\"A\":\"name\",\"a\":3.145,\"+\":\"\"}");
 manager.procJson(json);
 	
 

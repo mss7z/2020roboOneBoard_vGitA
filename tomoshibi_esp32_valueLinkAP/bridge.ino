@@ -1,6 +1,9 @@
 #include "header.h"
 #include "valTalkerBuf.h"
 
+#define VALUE_LINK_TX 27
+#define VALUE_LINK_RX 26
+
 WebSocketsServer webSocket(81);
 
 void broadcastJsonStr(const char *str){
@@ -119,7 +122,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 
 void setupBridge(){
   //serialRapper.begin(115200);
-  Serial1.begin(115200,SERIAL_8N1,26,27);
+  Serial1.begin(115200,SERIAL_8N1,VALUE_LINK_RX,VALUE_LINK_TX);
 
   // start webSocket server
   webSocket.begin();

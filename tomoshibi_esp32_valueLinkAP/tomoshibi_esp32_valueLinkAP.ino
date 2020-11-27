@@ -28,8 +28,8 @@ void setup() {
   Serial.println("\nstarted ESP32!");
 
   if(IS_DEBUG){
-    static const char ssid[]="MNS24-hp3326";
-    static const char password[]="skyNodeNetwork@87";
+    static const char ssid[]="Hawaii";
+    static const char password[]="pass114514";
     
     Serial.printf("Connecting to %s\n", ssid);
     WiFi.begin(ssid, password);
@@ -61,7 +61,7 @@ void setup() {
   
   dnsServer.start(53,"jaxson.local",appIp);
   
-  webApp.serveStatic("/",FSUSE,"/","max-age=12400");
+  webApp.serveStatic("/",FSUSE,"/","no-store,max-age=0");
 
   webApp.onNotFound([](){
     Serial.print("URI:");

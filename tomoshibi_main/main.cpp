@@ -4,6 +4,8 @@
 #include "base.hpp"
 #include "run.hpp"
 
+
+
 namespace com{
 	rob::aXbeeCom xbee(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9C,0xF1));
 	rob::aXbeeCom kanto(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9C,0x79));
@@ -248,6 +250,29 @@ namespace checker{
 		}*/
 		printToLcd();
 	}
+}
+
+namespace vl{	
+/*
+ajustFloat ajustFloatArray[]={
+		ajustFloat("t",&run::targetDeg,0.05),
+		ajustFloat("P",&run::degGainP,0.0001),
+		ajustFloat("I",&run::degGainI,0.0001),
+		ajustFloat("D",&run::degGainD,0.0000001),
+		ajustFloat("p",&run::targetDegGainP,0.000001),
+		ajustFloat("i",&run::targetDegGainI,0.0000001),
+		ajustFloat("d",&run::targetDegGainD,0.00000001),
+		ajustFloat("m",&run::targetDegBaseChangeMult,0.001),
+	};*/
+	
+	float kaijo=123.0;
+
+	Serial valueLinkRawSerial(PC_10,PC_11,115200);
+	valueLinkCore valueLink(valueLinkRawSerial);
+	ajustFloatVL targetDeg(valueLink.refManager(),"jaxson",&run::targetDeg,0.05);
+	ajustFloatVL degGainP(valueLink.refManager(),"degGainP",&run::degGainP,0.0001);
+	
+	ajustFloatVL mais(valueLink.refManager(),"kaijo!!",&kaijo,0.4);
 }
 
 int main(){
