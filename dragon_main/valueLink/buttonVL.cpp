@@ -16,6 +16,7 @@ void crossBtnVL::attach(Callback<void(char)> val){
 	return;
 }
 void crossBtnVL::listener(char c){
+	//pc.printf("cross btn listener called!");
 	callbackFunc(c);
 }
 

@@ -4,7 +4,7 @@ let statusElem=document.getElementById("status");
 class logPrinter{
 	constructor(){
 		this.list=[]
-		for(let i=0;i<10;i++){
+		for(let i=0;i<100;i++){
 			this.list.push(".");
 		}
 		this.elem=document.getElementById("logField");
@@ -121,17 +121,17 @@ class crossBtn{
 		let down=document.createElement("div");
 		down.setAttribute("class",classVal);
 		down.innerHTML=innerVal;
-		down.onclick=function(){
+		const sendValFunc=function(){
 			send(`\{\"${selfID}\":\"${sendVal}\"\}`);
 		}
 		let listener=function(endEvent){
-			const intervalID=setInterval(function(){
-				send(`\{\"${selfID}\":\"${sendVal}\"\}`);
-			},300);
+			const intervalID=setInterval(sendValFunc,100);
+			sendValFunc();
 			const endEventListener=function(){
 				return function f(){
 					down.removeEventListener(endEvent,f,false);
 					clearInterval(intervalID);
+					send(`\{\"${selfID}\":\"0\"\}`);
 				}
 			}
 			down.addEventListener(endEvent,endEventListener());
@@ -149,17 +149,26 @@ class crossBtn{
 		this.selfMother=document.createElement("div");
 		this.selfMother.setAttribute("id","crossBtn-"+this.id);
 		
-		this.down=this.addSingleBtn("D","downCrossBtn","D");
-		this.selfMother.appendChild(this.down);
+		this.crossMother=document.createElement("div");
+		this.crossMother.setAttribute("class","crossBtn");
 		
-		this.up=this.addSingleBtn("U","upCrossBtn","U");
-		this.selfMother.appendChild(this.up);
+		const crossMotherAbs=document.createElement("div");
+		crossMotherAbs.setAttribute("class","crossBtnAbs");
+		crossMotherAbs.appendChild(this.crossMother);
 		
-		this.left=this.addSingleBtn("L","leftCrossBtn","L");
-		this.selfMother.appendChild(this.left);
+		this.down=this.addSingleBtn("D","downCrossBtn btn","D");
+		this.crossMother.appendChild(this.down);
 		
-		this.right=this.addSingleBtn("R","rightCrossBtn","R");
-		this.selfMother.appendChild(this.right);
+		this.up=this.addSingleBtn("U","upCrossBtn btn","U");
+		this.crossMother.appendChild(this.up);
+		
+		this.left=this.addSingleBtn("L","leftCrossBtn btn","L");
+		this.crossMother.appendChild(this.left);
+		
+		this.right=this.addSingleBtn("R","rightCrossBtn btn","R");
+		this.crossMother.appendChild(this.right);
+		
+		this.selfMother.appendChild(crossMotherAbs);
 		
 		let mother=document.getElementById("btnField");
 		mother.appendChild(this.selfMother);

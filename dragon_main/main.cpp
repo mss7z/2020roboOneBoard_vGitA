@@ -101,10 +101,11 @@ namespace com{
 			base::turnEmerg();
 			return;
 		}
-		
+		/*
 		const float rotation=byte2floatMotorOutput(array[1])*0.35;
 		const float base=0.0*0.3;
-		run::setMove(base+rotation,base-rotation);
+		run::setMove(base+rotation,base-rotation);*/
+		run::setUserRotateController(byte2floatMotorOutput(array[1]));
 		
 		run::setUserAdd(byte2floatMotorOutput(array[0]));//!!!!!!!!!!!!!!!
 		
@@ -271,13 +272,35 @@ ajustFloat ajustFloatArray[]={
 		//TX RX
 	Serial valueLinkRawSerial(PA_0,PA_1,115200);
 	valueLinkCore valueLink(valueLinkRawSerial);
-	ajustFloatVL targetDeg(valueLink.refManager(),"jaxson",&run::targetDeg,0.05);
+	ajustFloatVL targetDeg(valueLink.refManager(),"targetDeg",&run::targetDeg,0.05);
 	ajustFloatVL degGainP(valueLink.refManager(),"degGainP",&run::degGainP,0.0001);
 	
 	ajustFloatVL mais(valueLink.refManager(),"kaijo!!",&kaijo,0.4);
 	
 	void callbackListener(char c){
-		pc.printf("hello\n");
+		switch (c){
+			case 'U':
+			run::setUserAdd(1.0);
+			break;
+			
+			case 'D':
+			run::setUserAdd(-1.0);
+			break;
+			
+			case 'R':
+			run::setUserRotateSumaho(1.0);
+			break;
+			
+			case 'L':
+			run::setUserRotateSumaho(-1.0);
+			break;
+			
+			case '0':
+			run::setUserRotateSumaho(0.0);
+			break;
+			
+			default:break;
+		}
 	}
 	
 	void setupVL(){
@@ -304,7 +327,7 @@ int main(){
 		axisX::loopAxisX();
 		if(printInterval){
 			//com::printReceive();
-			pc.printf("enc2:%6d ",rob::rotaryEncoder2.read());
+			//pc.printf("enc2:%6d ",rob::rotaryEncoder2.read());
 			run::printDeg();
 		}
 		run::loopRun();

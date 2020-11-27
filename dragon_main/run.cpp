@@ -43,7 +43,7 @@ float displacementAdd=0.0;
 //内部
 float getDegDiff();
 void pidAndOutput();
-
+void calcAndSetRotate();
 void calcDisplacement();
 
 
@@ -81,6 +81,7 @@ void pidAndOutput(){
 }
 
 void setMove(const float valL,const float valR){
+	pc.printf("L:%f R:%f",valL,valR);
 	motorL.setBase(valL);
 	motorR.setBase(valR);
 }
@@ -91,12 +92,28 @@ void setUserAdd(const float add){//setUSERRRRRRRRRRR
 	displacementAddFilter=0.3*displacementAdd+0.7*displacementAddFilter;
 	targetDegPid.set(displacementAddFilter);
 }
+
+float rotateSumaho=0.0,rotateController=0.0;
+void setUserRotateSumaho(const float val){
+	//複数台のスマホでやった時やべえ
+	rotateSumaho=val*0.36;
+	calcAndSetRotate();
+}
+void setUserRotateController(const float val){
+	rotateController=val*0.35;
+	calcAndSetRotate();
+}
+void calcAndSetRotate(){
+	const float rot=(rotateSumaho+rotateController);
+	setMove(rot,-rot);
+}
 void resetGyroAndPid(){
 	degPid.reset();
 	
 }
 void printDeg(){
 	using namespace rob;
+	return;
 	pc.printf(" disp(tag:%5d now:%5d)",(int)targetDegPid.read(),(int)axisX::get());
 	pc.printf(" targetDeg:%7s +Add:%7s deg:%7s",flt(targetDeg),flt(targetDeg+targetDegAdd),flt(deg::get()));
 	pc.printf(" gyro:%7s acel:%7s rory:%7s",flt(deg::degGyro),flt(deg::degAccel),flt(deg::degRorycon));

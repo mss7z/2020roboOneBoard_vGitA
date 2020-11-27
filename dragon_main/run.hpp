@@ -34,7 +34,9 @@ extern float targetDegBaseChangeMult;
 
 //外部
 void setMove(const float valL,const float valR);
-void setUserAdd(const float val);
+void setUserAdd(const float);
+void setUserRotateSumaho(const float);
+void setUserRotateController(const float);
 void resetGyroAndPid();
 void printDeg();
 bool isGoodDeg();

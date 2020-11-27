@@ -18,7 +18,7 @@ void valueLinkCore::send(){
 }
 void valueLinkCore::receive(){
 	const char *str=(const char*)valTalker.getBufP();
-	//pc.printf("receive: %s",str);
+	//pc.printf("receive: %s\n",str);
 	
 	const int tokensSize=50;
 	jsmn_parser p;
@@ -41,24 +41,24 @@ void valueLinkCore::receive(){
 			}
 			const char smallID=str[tokens[SMALL_ID+offset].start];
 			//pc.printf("i=%d\n",i);
-			if(tokens[ADD_VALUE+offset].type!=JSMN_PRIMITIVE){
-				return;
-			}
 			char buf[50]="";
 			strncpy(buf,str+tokens[ADD_VALUE+offset].start,tokens[ADD_VALUE+offset].end-tokens[ADD_VALUE+offset].start);
-			const float addValue=atof(buf);
 			
-			if(smallID=='+'){
-				crossBtn.listener(buf[0]);
-				return;
+			if(tokens[ADD_VALUE+offset].type==JSMN_PRIMITIVE){
+				const float addValue=atof(buf);
+				ajustVLbaseBase *refP=vlManager.refBySmallID(smallID);
+				if(refP!=NULL){
+					refP->ajust(addValue);
+					send();
+				}
+			}else if(tokens[ADD_VALUE+offset].type==JSMN_STRING){
+				if(smallID=='+'){
+					crossBtn.listener(buf[0]);
+					return;
+				}
 			}
 			
-			ajustVLbaseBase *refP=vlManager.refBySmallID(smallID);
-			if(refP!=NULL){
-				refP->ajust(addValue);
-				send();
-			}
-			//pc.printf("parse smallID %c  buf %s addValue %f\n",smallID,buf,addValue);
+			//pc.printf("parse smallID %c  buf %s\n",smallID,buf);
 		}
 	}
 }

@@ -1,0 +1,142 @@
+[
+    {
+        "module": ".\\aGyro_imu03a.o", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": 88, 
+            ".bss": 0, 
+            ".data": 0, 
+            ".bss-delta": 0, 
+            ".text": 620
+        }
+    }, 
+    {
+        "module": ".\\aTB6643KQ.o", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": 0, 
+            ".bss": 0, 
+            ".data": 0, 
+            ".bss-delta": 0, 
+            ".text": 206
+        }
+    }, 
+    {
+        "module": ".\\aXbee.o", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": 0, 
+            ".bss": 0, 
+            ".data": 0, 
+            ".bss-delta": 0, 
+            ".text": 268
+        }
+    }, 
+    {
+        "module": ".\\aXbeeCore.o", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": 0, 
+            ".bss": 0, 
+            ".data": 0, 
+            ".bss-delta": 0, 
+            ".text": 560
+        }
+    }, 
+    {
+        "module": ".\\main.o", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": 0, 
+            ".bss": 1426, 
+            ".data": 4, 
+            ".bss-delta": 0, 
+            ".text": 1710
+        }
+    }, 
+    {
+        "module": ".\\useful.o", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": 0, 
+            ".bss": 440, 
+            ".data": 4, 
+            ".bss-delta": 0, 
+            ".text": 552
+        }
+    }, 
+    {
+        "module": "MbedOS2\\TARGET_NUCLEO_F446RE", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": 0, 
+            ".bss": 756, 
+            ".data": 264, 
+            ".bss-delta": 0, 
+            ".text": 18173
+        }
+    }, 
+    {
+        "module": "[fill]", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": -24, 
+            ".bss": 31, 
+            ".data": 8, 
+            ".bss-delta": 0, 
+            ".text": 122
+        }
+    }, 
+    {
+        "module": "[lib]\\c.a", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": 0, 
+            ".bss": 89, 
+            ".data": 2472, 
+            ".bss-delta": 0, 
+            ".text": 28467
+        }
+    }, 
+    {
+        "module": "[lib]\\gcc.a", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": 0, 
+            ".bss": 0, 
+            ".data": 0, 
+            ".bss-delta": 0, 
+            ".text": 3392
+        }
+    }, 
+    {
+        "module": "[lib]\\mbed.a", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": 0, 
+            ".bss": 334, 
+            ".data": 8, 
+            ".bss-delta": 0, 
+            ".text": 6777
+        }
+    }, 
+    {
+        "module": "[lib]\\misc", 
+        "size": {
+            ".data-delta": 0, 
+            ".text-delta": 0, 
+            ".bss": 28, 
+            ".data": 16, 
+            ".bss-delta": 0, 
+            ".text": 252
+        }
+    }, 
+    {
+        "summary": {
+            "static_ram": 5880, 
+            "total_flash_delta": 64, 
+            "static_ram_delta": 0, 
+            "total_flash": 63875
+        }
+    }
+]
