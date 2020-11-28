@@ -19,7 +19,7 @@ IPAddress subnet(255,255,255,0);
 WebServer webApp(80);
 DNSServer dnsServer;
 
-const bool IS_DEBUG=true;
+const bool IS_STATION_MODE=true;
 enum{
   TOMOSHIBI,
   DRAGON
@@ -32,9 +32,10 @@ void setup() {
   Serial.begin(115200);
   Serial.println("\nstarted ESP32!");
 
-  if(IS_DEBUG){
+  if(IS_STATION_MODE){
     static const char ssid[]="Hawaii";
     static const char password[]="pass114514";
+    
 
     IPAddress myIP;
     if(TARGET_MACHINE==TOMOSHIBI){

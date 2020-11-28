@@ -5,6 +5,8 @@
 	padding:0;
 	font-size:16px;
 	user-select:none;
+	
+	font-family:sans-serif;
 }
 .btn:active{
 	background-color:white;
@@ -49,12 +51,30 @@ h1 {
 	color:white;
 }
 
-button[type="button"]{
+#stdBtnField>*{
 	background-color: #d1ffd1;
-	border:none;
 	display:block;
-	width:100%;
+	width:49%;
 	height:3em;
+	float:left;
+	line-height:3em;
+}
+
+/*button[type="button"]{
+	border:none;
+}*/
+#fullScreen{
+	border:none;
+}
+#gotoOther{
+	color:black;
+	text-decoration:none;
+	margin-left:5px;
+	text-align:center;
+}
+hr{
+	clear:both;
+	border:0;
 }
 
 #valueField>div{
@@ -91,10 +111,13 @@ button[type="button"]{
 	position:fixed;
 	bottom:0;
 	left:0;
-	height:10em;
+	height:10.5em;
 	width:100vw;
 	border-top:solid 5px white;
 	background-color:white;
+}
+#paddingForBtnField{
+	height:10em;
 }
 
 .crossBtnAbs{
@@ -103,6 +126,7 @@ button[type="button"]{
 	right:0;
 	height:10em;
 	width:10em;
+	margin:5px;
 }
 .crossBtn{
 	position:relative;
@@ -144,4 +168,7 @@ button[type="button"]{
 
 #logField {
 	background-color: #d1d1ff;
+	white-space:normal;
+	width:100%;
+	width:100%;
 }

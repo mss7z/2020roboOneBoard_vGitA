@@ -10,25 +10,30 @@
 
 <body><main>
 <div id="mother">
+	<div id="status">Unknown</div>
 
-<div id="status">Unknown</div>
+	<div id="stdBtnField">
+		<button class="btn" type="button" id="fullScreen" onclick="turnFullScreenOnOff()">Make it full screen.</button>
+		<a class="btn" id="gotoOther" href="">GoTo </a>
+	</div>
+	<hr>
 
-<button class="btn" type="button" id="fullScreen" onclick="turnFullScreenOnOff()">Make it full screen.</button>
-
-<div id="valueField">
-</div>
+	<div id="valueField">
+	</div>
 
 
-<div id="logField">
-</div>
-
+	<div id="logField">
+	</div>
+	
+	<div id="paddingForBtnField"></div>
 </div>
 
 <div id="btnField">
 </div>
 
 </main>
-<script src="script.js"></script>
+<script src="base.js"></script>
+<script src="valueLinkJS.js"></script>
 </body>
 
 </html>
