@@ -19,7 +19,7 @@ IPAddress subnet(255,255,255,0);
 WebServer webApp(80);
 DNSServer dnsServer;
 
-const bool IS_STATION_MODE=true;
+const bool IS_STATION_MODE=false;
 enum{
   TOMOSHIBI,
   DRAGON
