@@ -9,8 +9,6 @@
 namespace com{
 	rob::aXbeeCom xbee(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9C,0xF1));
 	
-	
-	
 #ifdef TARGET_IS_TOMOSHIBI
 	//rob::aXbeeCom &kanto=miniKanto;
 	rob::aXbeeCom kanto(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9C,0x79));
@@ -30,7 +28,7 @@ namespace com{
 	
 	const uint8_t MAX_LCD_STRLEN=100;
 	
-	bool isKantoOn=false;
+	char kantoStatus='S';
 	
 	//内部
 	void ifReceiveFromController(uint8_t*,uint16_t);
@@ -44,9 +42,7 @@ namespace com{
 	//外部
 	void setupCom();
 	void printLcd(const uint8_t col,const uint8_t row, const char str[]);
-	void setKantoIs(bool);
-	void sendToOtherMachine(char);
-	void setKantoStatusByChar(char);
+	void setKantoStatusAndTellOtherMachine(char);
 	
 	class ajustFloat{
 		private:
@@ -156,7 +152,7 @@ namespace com{
 		if(size!=1){
 			return;
 		}
-		setKantoStatusByChar((char)array[0]);
+		kantoStatus=(char)array[0];
 	}
 	float byte2floatMotorOutput(const uint8_t source){
 		using namespace rob::arduino;
@@ -183,21 +179,22 @@ namespace com{
 		printLcd(0,0,"o");
 	}
 	void loopCom(){
-		static rob::regularC_ms printLcdTime(180);
+		static rob::regularC_ms printLcdTime(400);
 		if(printLcdTime){
 			printLcd(1,0,rob::flt(run::control));
 			ajust.print();
 		}
 		
-		if(isKantoOn){
-			//現在基準のregularCである必要
-			static rob::regularC_ms sendToKantoTime(100);
-			if(sendToKantoTime){
+		static rob::regularC_ms sendToKantoTime(100);
+		if(sendToKantoTime){
+			if(kantoStatus!='S'){
 				sendToKantoByStatus();
+			}else{
+				sendToKantoByChar(kantoStatus);//'S'
 			}
-		}else{
-			sendToKantoByChar('S');
+			//pc.printf("true isKantoOn :%s\n",isKantoOn?"true":"false");
 		}
+		
 	}
 	void printReceive(){
 		pc.printf("size:%3d",receiveSize);
@@ -217,22 +214,32 @@ namespace com{
 	}
 	void sendToKantoByStatus(){
 		bool isGood=run::isGoodDeg();
-		static bool preIsGood=false;
-		if(preIsGood==isGood){
+		/*static bool preIsGood=false;
+		static bool isFirst=true;
+		if(preIsGood==isGood && !isFirst){
 			return;
 		}
-		preIsGood=isGood;
+		isFirst=false;
+		preIsGood=isGood;*/
+		
 		uint8_t c;
 		if(isGood){
 			c='N';
 		}else{
 			c='R';
 		}
-		kanto.send(&c,1);
+		sendToKantoByChar(c);
 		return;
 	}
 	void sendToKantoByChar(char c){
-		kanto.send((uint8_t*)&c,1);
+		static char preSend='\0';
+		static rob::timesC forceSendTime(30);
+		if(preSend!=c || forceSendTime){
+			pc.printf("kanto send send :%c\n",c);
+			kanto.send((uint8_t*)&c,1);
+			preSend=c;
+		}
+		//pc.printf("kanto request send :%c\n",c);
 	}
 		
 	void printLcd(const uint8_t cow,const uint8_t row,const char str[]){
@@ -246,16 +253,13 @@ namespace com{
 		xbee.send(array,arrayLen);
 	}
 	
-	void setKantoIs(bool val){
-		isKantoOn=val;
-	}
 	void sendToOtherMachine(char c ){
 		otherMachine.send((uint8_t*)&c,1);
 	}
-	void setKantoStatusByChar(char c){
-		pc.printf("%c is cended\n",c);
+	
+	void setKantoStatusAndTellOtherMachine(char c){
+		kantoStatus=c;
 		sendToOtherMachine(c);
-		setKantoIs(c=='N');
 	}
 }
 
@@ -331,6 +335,7 @@ ajustFloat ajustFloatArray[]={
 	ajustFloatVL mais(valueLink.refManager(),"kaijo!!",&kaijo,0.4);
 	
 	void callbackListener(char c){
+		//pc.printf("ALL receive %c\n",c);
 		switch (c){
 			case 'U':
 			run::setUserAdd(-1.0);
@@ -354,7 +359,8 @@ ajustFloat ajustFloatArray[]={
 			
 			case 'N':
 			case 'S':
-			com::setKantoStatusByChar(c);
+			//pc.printf("NS receive %c\n",c);
+			com::setKantoStatusAndTellOtherMachine(c);
 			break;
 			
 			default:break;

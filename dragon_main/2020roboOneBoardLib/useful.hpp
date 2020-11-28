@@ -77,6 +77,23 @@ public:
 	operator bool(){return ist();}
 };
 
+class timesC{
+	private:
+	int cont;
+	const int times;
+	public:
+	timesC(const int timesa):cont(0),times(timesa){}
+	bool is(){
+		if(cont>=times){
+			cont=0;
+			return true;
+		}
+		cont++;
+		return false;
+	}
+	operator bool(){return is();}
+};
+
 class trueFalse{
 	private:
 	bool is;

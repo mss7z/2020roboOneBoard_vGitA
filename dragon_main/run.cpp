@@ -86,7 +86,7 @@ void pidAndOutput(){
 }
 
 void setMove(const float valL,const float valR){
-	pc.printf("L:%f R:%f",valL,valR);
+	//pc.printf("L:%f R:%f",valL,valR);
 	motorL.setBase(valL);
 	motorR.setBase(valR);
 }
@@ -101,7 +101,7 @@ void setUserAdd(const float add){//setUSERRRRRRRRRRR
 float rotateSumaho=0.0,rotateController=0.0;
 void setUserRotateSumaho(const float val){
 	//複数台のスマホでやった時やべえ
-	rotateSumaho=val*0.36;
+	rotateSumaho=val*0.4;
 	calcAndSetRotate();
 }
 void setUserRotateController(const float val){
@@ -128,7 +128,7 @@ void printDeg(){
 }
 
 bool isGoodDeg(){
-	static const float PM=0.3;
+	static const float PM=80;
 	return PM>abs(getDegDiff());
 }
 

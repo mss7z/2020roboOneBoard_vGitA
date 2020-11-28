@@ -36,6 +36,23 @@ public:
   unsigned long read(){return interval;}
 };
 
+class timesC{
+  private:
+  int cont;
+  const int times;
+  public:
+  timesC(const int timesa):cont(0),times(timesa){}
+  bool is(){
+    if(cont>=times){
+      cont=0;
+      return true;
+    }
+    cont++;
+    return false;
+  }
+  operator bool(){return is();}
+};
+
 template <typename T>
 class delta{
 private:
@@ -61,6 +78,8 @@ namespace base{
   bool isReadTime(){return isControllerReadable;}
 }
 namespace com{
+  const size_t SEND_ARRAY_LEN=4;
+  
   rob::aXbeeArduinoHardwareSerial xbeeSerial(Serial);
   rob::aXbeeCoreCallback<2> xbeeCore(&xbeeSerial);
   rob::aXbeeCom tomoshibi(xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xa2,0x00,0x40,0xCA,0x9D,0x3B));
@@ -70,12 +89,14 @@ namespace com{
   void setupCom();
   void loopCom();
   byte genButtonBit(const int val, const byte shift);
+  bool isSameArray(const uint8_t *a,const uint8_t *b,const uint16_t len);
+  void sendControllNoSame(uint8_t*);
   void sendControll();
   void sendEmptyControll();
   void printLcd(uint8_t[],uint16_t);
 
   void setupCom(){
-    xbeeSerial.begin(38400);
+    xbeeSerial.begin(115200);
     tomoshibi.attach(printLcd);
     //dragon.attach(printLcd);
   }
@@ -95,6 +116,25 @@ namespace com{
 
   byte genButtonBit(const int val,const byte shift){
     return ((byte)(val!=0))<<shift;
+  }
+  bool isSameArray(const uint8_t *a,const uint8_t *b,const uint16_t len){
+    for(uint16_t i=0;i<len;i++){
+      if(a[i]!=b[i]){
+        return false;
+      }
+    }
+    return true;
+  }
+  void sendControllNoSame(uint8_t *array){
+    static uint8_t preArray[SEND_ARRAY_LEN]={};
+    static timesC forceSendTime(30);
+    if(isSameArray(array,preArray,SEND_ARRAY_LEN) && !forceSendTime){
+      return;
+    }
+    xbeeP->send(array,SEND_ARRAY_LEN);
+    for(uint16_t i=0;i<SEND_ARRAY_LEN;i++){
+      preArray[i]=array[i];
+    }
   }
   void sendControll(){
     byte buttonBit1=0,buttonBit2=0;
@@ -121,22 +161,24 @@ namespace com{
     buttonBit1|=genButtonBit(PRESSED_SQUARE(PS),KILL_BTN);
     
     buttonBit2|=genButtonBit(IS_DOWN_L1(PS),L1_BTN);
-    byte sendArray[]={
+    byte sendArray[SEND_ARRAY_LEN]={
       ANALOG_RIGHT_Y(PS),
       ANALOG_RIGHT_X(PS),
       buttonBit1,
       buttonBit2,
     };
-    xbeeP->send(sendArray,ARRAYLEN(sendArray));
+    //xbeeP->send(sendArray,ARRAYLEN(sendArray));
+    sendControllNoSame(sendArray);
   }
   void sendEmptyControll(){
-    byte sendArray[]={
+    byte sendArray[SEND_ARRAY_LEN]={
       128,
       128,
       0,
       0,
     };
-    xbeeP->send(sendArray,ARRAYLEN(sendArray));
+    //xbeeP->send(sendArray,ARRAYLEN(sendArray));
+    sendControllNoSame(sendArray);
   }
   void printLcd(uint8_t array[],uint16_t arrayLen){
     if(arrayLen<2){

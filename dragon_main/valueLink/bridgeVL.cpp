@@ -18,7 +18,7 @@ void valueLinkCore::send(){
 }
 void valueLinkCore::receive(){
 	const char *str=(const char*)valTalker.getBufP();
-	//pc.printf("receive: %s\n",str);
+	pc.printf("receive: %s\n",str);
 	
 	const int tokensSize=50;
 	jsmn_parser p;
@@ -75,7 +75,7 @@ valueLinkCore::valueLinkCore(Serial &rawSrlA):
 void valueLinkCore::setup(){
 	char *str=vlManager.getAllJsonStr();
 	sendStr(str);
-	pc.printf("send:%s\n",str);
+	//pc.printf("send:%s\n",str);
 	sendStr(crossBtn.getJsonStr());
 }
 
