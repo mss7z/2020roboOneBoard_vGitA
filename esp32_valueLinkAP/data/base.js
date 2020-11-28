@@ -4,7 +4,7 @@ let base=(function(){
 	
 	let _myHostname=location.hostname;
 	if(_myHostname==""){
-		_myHostname=_dragonHost;
+		_myHostname=_tomoshibiHost;
 	}
 	
 	let _name="";
@@ -83,8 +83,20 @@ function turnFullScreenOnOff(){
 
 
 (function(){
+	//マシンに即した設定
 	let gotoOtherElem=document.getElementById("gotoOther");
 	gotoOtherElem.setAttribute("href",base.otherURL);
 	gotoOtherElem.innerHTML+=base.otherName;
-	log(base.otherURL+"asdasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf");
+	
+	let viewMainElem=document.getElementById("viewMain");
+	let name=base.myName;
+	log(name);
+	if(name=="Dragon"){
+		viewMainElem.style.backgroundColor="#333";
+	}else if(name=="Tomoshibi"){
+		viewMainElem.style.backgroundColor="#fff";
+	}else{
+		viewMainElem.style.backgroundColor="green";
+	}
+	//log(base.otherURL+"asdasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf");
 })();

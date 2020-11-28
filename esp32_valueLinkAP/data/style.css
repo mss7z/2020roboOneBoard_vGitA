@@ -22,7 +22,7 @@ main {
 	display:block;
 	position: absolute;
 	top:0;left:0;
-	height:100vh;
+	/*height:100vh;*/
 	width:100vw;
 	
 }
@@ -54,7 +54,7 @@ h1 {
 #stdBtnField>*{
 	background-color: #d1ffd1;
 	display:block;
-	width:49%;
+	width:49.25%;
 	height:3em;
 	float:left;
 	line-height:3em;
@@ -113,11 +113,11 @@ hr{
 	left:0;
 	height:10.5em;
 	width:100vw;
-	border-top:solid 5px white;
-	background-color:white;
+	padding-top:5px;
+	background-color:rgba(0,0,0,0.5);
 }
 #paddingForBtnField{
-	height:10em;
+	height:11em;
 }
 
 .crossBtnAbs{
