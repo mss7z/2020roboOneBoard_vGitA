@@ -75,6 +75,7 @@ valueLinkCore::valueLinkCore(Serial &rawSrlA):
 void valueLinkCore::setup(){
 	char *str=vlManager.getAllJsonStr();
 	sendStr(str);
+	pc.printf("send:%s\n",str);
 	sendStr(crossBtn.getJsonStr());
 }
 

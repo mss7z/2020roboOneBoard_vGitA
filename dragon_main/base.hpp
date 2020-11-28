@@ -4,6 +4,8 @@
 
 #include "2020roboOneBoardLib_setting.hpp"
 
+#define TARGET_IS_DRAGON
+
 namespace base{
 	extern bool isEmergVal;
 	

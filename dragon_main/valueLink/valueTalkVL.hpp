@@ -103,7 +103,7 @@ class valTalkerBuf{
   void send(uint8_t* array, uint16_t len){
     uint32_t sum=0;
     srl->write(0xF8);
-    srl->write((len<<8)&0xFF);
+    srl->write((len>>8)&0xFF);
     srl->write((len)&0xFF);
     for(uint16_t i=0;i<len;i++){
       srl->write(array[i]);

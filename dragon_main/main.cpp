@@ -8,25 +8,45 @@
 
 namespace com{
 	rob::aXbeeCom xbee(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9C,0xF1));
-	rob::aXbeeCom kanto(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9C,0x79));
 	
+	
+	
+#ifdef TARGET_IS_TOMOSHIBI
+	//rob::aXbeeCom &kanto=miniKanto;
+	rob::aXbeeCom kanto(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9C,0x79));
+	//以下がDragon
+	rob::aXbeeCom otherMachine(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xa2,0x00,0x40,0xCA,0x9D,0x4D));
+#endif
+
+#ifdef TARGET_IS_DRAGON
+	//rob::aXbeeCom &kanto=bigKanto;
+	rob::aXbeeCom kanto(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xA2,0x00,0x40,0xCA,0x9D,0x0B));
+	//以下がTOMOSHIBI
+	rob::aXbeeCom otherMachine(rob::xbeeCore,rob::xbee64bitAddress(0x00,0x13,0xa2,0x00,0x40,0xCA,0x9D,0x3B));
+#endif
 	
 	uint8_t receiveArray[255]={0};
 	uint16_t receiveSize=0;
 	
 	const uint8_t MAX_LCD_STRLEN=100;
 	
+	bool isKantoOn=false;
+	
 	//内部
 	void ifReceiveFromController(uint8_t*,uint16_t);
+	void ifReceiveFromOtherMachine(uint8_t*,uint16_t);
 	float byte2floatMotorOutput(uint8_t);
 	bool genBoolFromButtonBit(uint8_t,uint8_t);
 	uint8_t calcStrLen(const char []);
-	void sendToKanto();
+	void sendToKantoByStatus();
+	void sendToKantoByChar(char);
 	
 	//外部
 	void setupCom();
 	void printLcd(const uint8_t col,const uint8_t row, const char str[]);
-	
+	void setKantoIs(bool);
+	void sendToOtherMachine(char);
+	void setKantoStatusByChar(char);
 	
 	class ajustFloat{
 		private:
@@ -132,6 +152,12 @@ namespace com{
 		//run::setTargetDeg(targetDeg);
 		//printLcd(0,1,rob::flt(targetDeg));
 	}
+	void ifReceiveFromOtherMachine(uint8_t *array,uint16_t size){
+		if(size!=1){
+			return;
+		}
+		setKantoStatusByChar((char)array[0]);
+	}
 	float byte2floatMotorOutput(const uint8_t source){
 		using namespace rob::arduino;
 		const uint8_t ZERO_VAL=128;
@@ -153,6 +179,7 @@ namespace com{
 	
 	void setupCom(){
 		xbee.attach(callback(ifReceiveFromController));
+		otherMachine.attach(callback(ifReceiveFromOtherMachine));
 		printLcd(0,0,"o");
 	}
 	void loopCom(){
@@ -162,9 +189,14 @@ namespace com{
 			ajust.print();
 		}
 		
-		static rob::regularC_ms sendToKantoTime(100);
-		if(sendToKantoTime){
-			sendToKanto();
+		if(isKantoOn){
+			//現在基準のregularCである必要
+			static rob::regularC_ms sendToKantoTime(100);
+			if(sendToKantoTime){
+				sendToKantoByStatus();
+			}
+		}else{
+			sendToKantoByChar('S');
 		}
 	}
 	void printReceive(){
@@ -183,7 +215,7 @@ namespace com{
 		}
 		return i+1;
 	}
-	void sendToKanto(){
+	void sendToKantoByStatus(){
 		bool isGood=run::isGoodDeg();
 		static bool preIsGood=false;
 		if(preIsGood==isGood){
@@ -199,6 +231,9 @@ namespace com{
 		kanto.send(&c,1);
 		return;
 	}
+	void sendToKantoByChar(char c){
+		kanto.send((uint8_t*)&c,1);
+	}
 		
 	void printLcd(const uint8_t cow,const uint8_t row,const char str[]){
 		const uint8_t arrayLen=calcStrLen(str)+2;
@@ -211,6 +246,17 @@ namespace com{
 		xbee.send(array,arrayLen);
 	}
 	
+	void setKantoIs(bool val){
+		isKantoOn=val;
+	}
+	void sendToOtherMachine(char c ){
+		otherMachine.send((uint8_t*)&c,1);
+	}
+	void setKantoStatusByChar(char c){
+		pc.printf("%c is cended\n",c);
+		sendToOtherMachine(c);
+		setKantoIs(c=='N');
+	}
 }
 
 namespace checker{
@@ -272,19 +318,26 @@ ajustFloat ajustFloatArray[]={
 		//TX RX
 	Serial valueLinkRawSerial(PA_0,PA_1,115200);
 	valueLinkCore valueLink(valueLinkRawSerial);
-	ajustFloatVL targetDeg(valueLink.refManager(),"targetDeg",&run::targetDeg,0.05);
-	ajustFloatVL degGainP(valueLink.refManager(),"degGainP",&run::degGainP,0.0001);
+	ajustFloatVL array[]={
+		ajustFloatVL(valueLink.refManager(),"targetDeg",&run::targetDeg,0.05),
+		ajustFloatVL(valueLink.refManager(),"degGainP",&run::degGainP,0.0001),
+		ajustFloatVL(valueLink.refManager(),"degGainI",&run::degGainI,0.0001),
+		ajustFloatVL(valueLink.refManager(),"degGainD",&run::degGainD,0.0000001),
+		ajustFloatVL(valueLink.refManager(),"targetDegGainP",&run::targetDegGainP,0.000001),
+		ajustFloatVL(valueLink.refManager(),"targetDegGainI",&run::targetDegGainI,0.0000001),
+		ajustFloatVL(valueLink.refManager(),"targetDegGainD",&run::targetDegGainD,0.00000001),
+	};
 	
 	ajustFloatVL mais(valueLink.refManager(),"kaijo!!",&kaijo,0.4);
 	
 	void callbackListener(char c){
 		switch (c){
 			case 'U':
-			run::setUserAdd(1.0);
+			run::setUserAdd(-1.0);
 			break;
 			
 			case 'D':
-			run::setUserAdd(-1.0);
+			run::setUserAdd(1.0);
 			break;
 			
 			case 'R':
@@ -297,6 +350,11 @@ ajustFloat ajustFloatArray[]={
 			
 			case '0':
 			run::setUserRotateSumaho(0.0);
+			break;
+			
+			case 'N':
+			case 'S':
+			com::setKantoStatusByChar(c);
 			break;
 			
 			default:break;

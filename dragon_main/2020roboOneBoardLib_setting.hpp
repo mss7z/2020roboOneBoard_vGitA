@@ -12,7 +12,7 @@
 #define ENABLE_imu03a
 #define ENABLE_xbeeCore
 #define VAL_xbeeCore_serialSpeed 115200
-#define VAL_xbeeCore_nodeNum 2
+#define VAL_xbeeCore_nodeNum 3
 
 
 namespace rob{

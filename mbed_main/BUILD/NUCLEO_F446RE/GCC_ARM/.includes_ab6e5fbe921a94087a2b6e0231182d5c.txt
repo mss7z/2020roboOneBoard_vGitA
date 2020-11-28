@@ -1,1 +1,0 @@
-"-I." "-I./2020roboOneBoardLib" "-ID:/mbedOffline44/Datas/MbedOS2" "-ID:/mbedOffline44/Datas/MbedOS2/TARGET_NUCLEO_F446RE/TOOLCHAIN_GCC_ARM" "-ID:/mbedOffline44/Datas/MbedOS2/drivers" "-ID:/mbedOffline44/Datas/MbedOS2/hal" "-ID:/mbedOffline44/Datas/MbedOS2/platform"
