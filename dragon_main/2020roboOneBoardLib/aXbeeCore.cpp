@@ -37,6 +37,8 @@ void aXbeeCoreBase::sendFrame(const uint8_t frameData[],const uint16_t frameData
 
 	//CheckSum
 	srl.putc(0xFF - (frameDataTotal & 0xFF));
+	
+	//pc.printf(".");
 
 	return;
 }
@@ -66,6 +68,8 @@ void aXbeeCoreBase::sendFrame(const xbeeArrayNode* node,const uint16_t nodeSize)
 
 	//CheckSum
 	srl.putc(0xFF - (frameDataTotal & 0xFF));
+	
+	//pc.printf(".");
 
 	return;
 }
