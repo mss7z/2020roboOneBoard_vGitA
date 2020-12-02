@@ -16,7 +16,7 @@ let base=(function(){
 		_otherName="Tomoshibi";
 	}else if(_myHostname==_tomoshibiHost){
 		_name="Tomoshibi";
-		_otherHostname=_tomoshibiHost;
+		_otherHostname=_dragonHost;
 		_otherName="Dragon";
 	}else{
 		_name="Unknown Host";

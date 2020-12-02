@@ -6,6 +6,13 @@ motor motorR(rob::tb6643kq_md4,1.0);
 
 
 #ifdef TARGET_IS_TOMOSHIBI
+const float rotateMult=0.3;
+#endif
+#ifdef TARGET_IS_DRAGON
+const float rotateMult=0.4;
+#endif
+
+#ifdef TARGET_IS_TOMOSHIBI
 //float degGainP=0.00391;float degGainI=0.01077;float degGainD=0.00004225;//0A17 testrun 1719 300us 50times
 float degGainP=0.00400;float degGainI=0.00847;float degGainD=0.00005345;//0A17 testrun 1719 300us 50times
 #endif
@@ -101,7 +108,7 @@ void setUserAdd(const float add){//setUSERRRRRRRRRRR
 float rotateSumaho=0.0,rotateController=0.0;
 void setUserRotateSumaho(const float val){
 	//複数台のスマホでやった時やべえ
-	rotateSumaho=val*0.4;
+	rotateSumaho=val*rotateMult;
 	calcAndSetRotate();
 }
 void setUserRotateController(const float val){
@@ -128,7 +135,7 @@ void printDeg(){
 }
 
 bool isGoodDeg(){
-	static const float PM=80;
+	static const float PM=80.0;
 	return PM>abs(getDegDiff());
 }
 

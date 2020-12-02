@@ -24,8 +24,10 @@ enum{
   TOMOSHIBI,
   DRAGON
 };
-const int TARGET_MACHINE=DRAGON;
+const int TARGET_MACHINE=TOMOSHIBI;
 
+//const char *CACHE_CONTROL="no-store,max-age=0";
+const char *CACHE_CONTROL="max-age=250";
 
 void setup() {
   // put your setup code here, to run once:
@@ -58,8 +60,6 @@ void setup() {
     Serial.print("Connected, IP address: ");
     Serial.println(WiFi.localIP());
   }else{
-
-    
     IPAddress myIp(192,168,0,10);
     appIp=myIp;
     
@@ -83,7 +83,7 @@ void setup() {
   
   dnsServer.start(53,"jaxson.local",appIp);
   
-  webApp.serveStatic("/",FSUSE,"/","no-store,max-age=0");
+  webApp.serveStatic("/",FSUSE,"/",CACHE_CONTROL);
 
   webApp.onNotFound([](){
     Serial.print("URI:");
