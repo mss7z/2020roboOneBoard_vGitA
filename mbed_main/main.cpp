@@ -236,7 +236,7 @@ namespace com{
 		static char preSend='\0';
 		static rob::timesC forceSendTime(30);
 		if(preSend!=c || forceSendTime){
-			pc.printf("kanto send send :%c\n",c);
+			//pc.printf("kanto send send :%c\n",c);
 			kanto.send((uint8_t*)&c,1);
 			preSend=c;
 		}
@@ -374,7 +374,7 @@ ajustFloat ajustFloatArray[]={
 }
 
 int main(){
-	rob::regularC_ms printInterval(100);
+	rob::regularC_ms printInterval(10);
 	com::setupCom();
 	run::setupRun();
 	deg::setupDeg();
