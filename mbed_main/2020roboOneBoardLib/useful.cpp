@@ -3,7 +3,7 @@
 namespace rob{
 
 
-Serial pc(USBTX,USBRX,115200);
+Serial pc(USBTX,USBRX,912600);
 DigitalOut led(LED1);
 
 namespace __flt_internal__{

@@ -58,7 +58,7 @@ void imu03aSetting::resetModule(){
 	com.end();
 	
 	//CTRL2_G に設定値を書きこんでgyroを起動
-	//設定値は1.66kHz 500dps
+	//設定値は1.66kHz 1000dps
 	com.start();
 	com.write(0x11);
 	com.write(0b10000100);
